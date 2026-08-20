@@ -1,8 +1,11 @@
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
+import { put, del } from "@vercel/blob";
 import type { MediaItem } from "./types";
 import { getPortfolio, savePortfolio } from "./data";
+
+const blobToken = () => process.env.BLOB_READ_WRITE_TOKEN;
 
 // Practical ceiling for a single upload. Configure via MAX_UPLOAD_MB in .env.
 // NOTE: browsers/Node buffer the whole file for a normal form upload, so
@@ -56,18 +59,30 @@ export async function saveUploadedFile(file: File, username: string): Promise<Up
   const uniquePrefix = crypto.randomBytes(4).toString("hex");
   const filename = `${uniquePrefix}-${safeBase || "file"}${ext}`;
 
-  const dir = path.join(process.cwd(), "public", "uploads", username, subdir);
-  await fs.mkdir(dir, { recursive: true });
-  const filePath = path.join(dir, filename);
-
   const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(filePath, buffer);
+  let url: string;
+
+  if (blobToken()) {
+    const blob = await put(`uploads/${username}/${subdir}/${filename}`, buffer, {
+      access: "public",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      contentType: file.type || "application/octet-stream",
+      token: blobToken(),
+    });
+    url = blob.url;
+  } else {
+    const dir = path.join(process.cwd(), "public", "uploads", username, subdir);
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(path.join(dir, filename), buffer);
+    url = `/uploads/${username}/${subdir}/${filename}`;
+  }
 
   const item: MediaItem = {
     id: crypto.randomUUID(),
     filename,
     originalName: file.name,
-    url: `/uploads/${username}/${subdir}/${filename}`,
+    url,
     kind,
     mimeType: file.type || "application/octet-stream",
     size: file.size,
@@ -85,11 +100,15 @@ export async function deleteMediaFile(username: string, id: string): Promise<voi
   if (!portfolio) return;
   const item = portfolio.media.find((m) => m.id === id);
   if (!item) return;
-  const filePath = path.join(process.cwd(), "public", item.url.replace(/^\//, ""));
-  try {
-    await fs.unlink(filePath);
-  } catch {
-    // file may already be gone; ignore
+  if (blobToken() && /^https?:\/\//.test(item.url)) {
+    await del(item.url, { token: blobToken() });
+  } else {
+    const filePath = path.join(process.cwd(), "public", item.url.replace(/^\//, ""));
+    try {
+      await fs.unlink(filePath);
+    } catch {
+      // file may already be gone; ignore
+    }
   }
   portfolio.media = portfolio.media.filter((m) => m.id !== id);
   await savePortfolio(portfolio);

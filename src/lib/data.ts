@@ -101,9 +101,9 @@ export async function updateUserDisplayName(username: string, displayName: strin
 
 /** Replaces every "/uploads/<oldUsername>/..." reference inside a portfolio with the new username. */
 function rewritePortfolioUsername(portfolio: Portfolio, oldUsername: string, newUsername: string): Portfolio {
-  const oldPrefix = `/uploads/${oldUsername}/`;
-  const newPrefix = `/uploads/${newUsername}/`;
-  const swap = (url: string) => (url.startsWith(oldPrefix) ? newPrefix + url.slice(oldPrefix.length) : url);
+  const oldSeg = `/uploads/${oldUsername}/`;
+  const newSeg = `/uploads/${newUsername}/`;
+  const swap = (url: string) => (url.includes(oldSeg) ? url.split(oldSeg).join(newSeg) : url);
 
   return {
     ...portfolio,

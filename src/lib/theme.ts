@@ -84,8 +84,20 @@ export function buildThemeCss(a: Appearance): string {
   --color-ink: ${text};
   --color-ink-soft: ${textSoft};
   --hero-overlay-opacity: ${overlayOpacity};
-  --font-display: var(${fontPair.displayVar});
-  --font-body: var(${fontPair.bodyVar});
 }
-${heroBackground}`;
+${heroBackground}
+/* Deliberately NOT overriding --font-display/--font-body here: those are
+   declared at :root by Tailwind's "@theme inline", but the actual
+   next/font variables (--font-fraunces, --font-playfair, ...) only exist
+   on <body> and below. A :root-level declaration referencing a
+   body-scoped variable is invalid at computed-value time, which makes
+   --font-display invalid everywhere it inherits to — this silently broke
+   ALL heading fonts (not just custom pairs) the same way. Reference the
+   font pair's real variable directly instead, in rules scoped to
+   <body>/its descendants where that variable is actually defined. Tailwind
+   also auto-generates a ".font-display" utility hardcoded to the default
+   font that collides with the ".font-display" class globals.css uses on
+   headings, so this needs !important to win regardless of load order. */
+.font-display, h1, h2, h3, h4 { font-family: var(${fontPair.displayVar}), serif !important; }
+body, .font-body { font-family: var(${fontPair.bodyVar}), sans-serif !important; }`;
 }

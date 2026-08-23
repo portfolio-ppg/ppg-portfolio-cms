@@ -23,7 +23,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      images: [{ url: "/images/e-portfolio-logo-white.png", width: 512, height: 512, alt: title }],
+      images: [{ url: "/images/e-portfolio-og.png", width: 512, height: 512, alt: title }],
       locale: "id_ID",
       type: "profile",
     },
@@ -31,7 +31,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: ["/images/e-portfolio-logo-white.png"],
+      images: ["/images/e-portfolio-og.png"],
     },
   };
 }

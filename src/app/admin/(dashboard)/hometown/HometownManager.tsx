@@ -11,7 +11,7 @@ import {
 import { Field, inputClass, buttonPrimaryClass, buttonSecondaryClass, Card } from "@/components/admin/ui";
 import ImagePicker from "@/components/admin/ImagePicker";
 import { useToast } from "@/components/admin/Toast";
-import type { HometownItem } from "@/lib/types";
+import type { HometownItem, MediaItem } from "@/lib/types";
 
 type HometownAction =
   | { type: "add"; item: HometownItem }
@@ -28,7 +28,15 @@ function fromForm(formData: FormData): Omit<HometownItem, "id"> {
   };
 }
 
-export default function HometownManager({ items, username }: { items: HometownItem[]; username: string }) {
+export default function HometownManager({
+  items,
+  media,
+  username,
+}: {
+  items: HometownItem[];
+  media: MediaItem[];
+  username: string;
+}) {
   const toast = useToast();
   const [, startTransition] = useTransition();
   const tempId = useRef(0);
@@ -81,7 +89,9 @@ export default function HometownManager({ items, username }: { items: HometownIt
     <div className="space-y-6">
       {editing ? (
         <ItemForm
+          key={editing === "new" ? "new" : editing.id}
           item={editing === "new" ? null : editing}
+          media={media}
           username={username}
           onSubmit={editing === "new" ? handleCreate : (fd) => handleUpdate((editing as HometownItem).id, fd)}
           onClose={() => setEditing(null)}
@@ -129,11 +139,13 @@ export default function HometownManager({ items, username }: { items: HometownIt
 
 function ItemForm({
   item,
+  media,
   username,
   onSubmit,
   onClose,
 }: {
   item: HometownItem | null;
+  media: MediaItem[];
   username: string;
   onSubmit: (formData: FormData) => void | Promise<void>;
   onClose: () => void;
@@ -163,7 +175,7 @@ function ItemForm({
           <textarea name="description" defaultValue={item?.description} rows={3} className={inputClass} />
         </Field>
 
-        <ImagePicker name="image" defaultValue={item?.image} label="Gambar" username={username} />
+        <ImagePicker name="image" defaultValue={item?.image} label="Gambar" username={username} media={media} />
 
         <Field label="Keterangan Gambar (alt text)">
           <input name="imageAlt" defaultValue={item?.imageAlt} className={inputClass} />

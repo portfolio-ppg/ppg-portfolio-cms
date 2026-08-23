@@ -23,7 +23,6 @@ export async function createTaskCategoryAction(username: string, formData: FormD
   await savePortfolio(portfolio);
 
   revalidatePath(`/${username}/tugas`);
-  revalidatePath("/admin/tasks");
 }
 
 export async function updateTaskCategoryAction(username: string, id: string, formData: FormData) {
@@ -37,7 +36,6 @@ export async function updateTaskCategoryAction(username: string, id: string, for
   await savePortfolio(portfolio);
 
   revalidatePath(`/${username}/tugas`);
-  revalidatePath("/admin/tasks");
 }
 
 export async function deleteTaskCategoryAction(username: string, id: string) {
@@ -49,5 +47,4 @@ export async function deleteTaskCategoryAction(username: string, id: string) {
   await savePortfolio(portfolio);
 
   revalidatePath(`/${username}/tugas`);
-  revalidatePath("/admin/tasks");
 }

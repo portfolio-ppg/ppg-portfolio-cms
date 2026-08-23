@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createUser, deleteUser, resetUserPassword, renameUser, updateUserDisplayName, getUsers } from "@/lib/data";
 import { validateUsername } from "@/lib/slug";
@@ -28,7 +27,6 @@ export async function createUserAction(
     return { error: e instanceof Error ? e.message : "Gagal membuat pengguna." };
   }
 
-  revalidatePath("/admin/users");
   return { ok: true };
 }
 
@@ -38,7 +36,6 @@ export async function deleteUserAction(username: string) {
     throw new Error("Tidak bisa menghapus akun yang sedang digunakan untuk login.");
   }
   await deleteUser(username);
-  revalidatePath("/admin/users");
 }
 
 export async function resetPasswordAction(
@@ -57,7 +54,6 @@ export async function resetPasswordAction(
     return { error: e instanceof Error ? e.message : "Gagal mereset kata sandi." };
   }
 
-  revalidatePath("/admin/users");
   return { ok: true };
 }
 
@@ -90,6 +86,5 @@ export async function renameUserAction(
     return { error: e instanceof Error ? e.message : "Gagal mengubah username." };
   }
 
-  revalidatePath("/admin/users");
   return { ok: true };
 }

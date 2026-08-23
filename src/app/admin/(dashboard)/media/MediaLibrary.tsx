@@ -14,6 +14,12 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+interface PendingUpload {
+  key: string;
+  name: string;
+  size: number;
+}
+
 export default function MediaLibrary({
   media,
   maxMb,
@@ -24,18 +30,23 @@ export default function MediaLibrary({
   username: string;
 }) {
   const [items, setItems] = useState(media);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState<PendingUpload[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
 
   async function uploadFiles(files: FileList | File[]) {
-    setUploading(true);
-    setError(null);
-    let uploaded = 0;
-    for (const file of Array.from(files)) {
+    const fileList = Array.from(files);
+    // Show every selected file as a pending card immediately — bulk selects
+    // no longer look "stuck" behind one shared spinner.
+    const withKeys = fileList.map((file, i) => ({
+      file,
+      key: `pending-${Date.now()}-${i}-${file.name}`,
+    }));
+    setPending((prev) => [...withKeys.map(({ key, file }) => ({ key, name: file.name, size: file.size })), ...prev]);
+
+    for (const { file, key } of withKeys) {
       try {
         const formData = new FormData();
         formData.append("file", file);
@@ -43,21 +54,17 @@ export default function MediaLibrary({
         const res = await fetch("/api/uploads", { method: "POST", body: formData });
         const data = await res.json();
         if (!res.ok) {
-          setError(data.error || `Gagal mengunggah ${file.name}.`);
           toast(data.error || `Gagal mengunggah ${file.name}.`, "error");
         } else {
           setItems((prev) => [data.item, ...prev]);
-          uploaded++;
+          toast(`"${file.name}" berhasil diunggah.`);
         }
       } catch {
-        setError(`Gagal mengunggah ${file.name}.`);
         toast(`Gagal mengunggah ${file.name}.`, "error");
+      } finally {
+        setPending((prev) => prev.filter((p) => p.key !== key));
       }
     }
-    if (uploaded > 0) {
-      toast(uploaded === 1 ? "File berhasil diunggah." : `${uploaded} file berhasil diunggah.`);
-    }
-    setUploading(false);
   }
 
   function copyUrl(item: MediaItem) {
@@ -97,16 +104,12 @@ export default function MediaLibrary({
           dragOver ? "border-gray-400 bg-gray-50" : "border-gray-200 bg-white"
         }`}
       >
-        {uploading ? (
-          <Loader2 size={22} className="animate-spin text-gray-400" />
-        ) : (
-          <Upload size={22} className="text-gray-400" />
-        )}
+        <Upload size={22} className="text-gray-400" />
         <p className="text-sm text-gray-600">Seret file ke sini, atau</p>
         <button onClick={() => inputRef.current?.click()} className={buttonPrimaryClass}>
           Pilih File
         </button>
-        <p className="text-xs text-gray-400">Gambar & dokumen, maksimal {maxMb} MB per file.</p>
+        <p className="text-xs text-gray-400">Gambar & dokumen, maksimal {maxMb} MB per file. Bisa pilih beberapa sekaligus.</p>
         <input
           ref={inputRef}
           type="file"
@@ -119,9 +122,18 @@ export default function MediaLibrary({
         />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+        {pending.map((p) => (
+          <Card key={p.key} className="!p-3 opacity-60">
+            <div className="relative mb-2 flex h-28 items-center justify-center overflow-hidden rounded-lg bg-gray-100">
+              <Loader2 size={22} className="animate-spin text-gray-400" />
+            </div>
+            <p className="truncate text-xs font-medium text-gray-900" title={p.name}>
+              {p.name}
+            </p>
+            <p className="text-[10px] text-gray-400">{formatSize(p.size)} · mengunggah…</p>
+          </Card>
+        ))}
         {items.map((item) => (
           <Card key={item.id} className="!p-3">
             <div className="relative mb-2 flex h-28 items-center justify-center overflow-hidden rounded-lg bg-gray-100">
@@ -153,7 +165,9 @@ export default function MediaLibrary({
           </Card>
         ))}
       </div>
-      {items.length === 0 && <p className="text-sm text-gray-500">Belum ada file yang diunggah.</p>}
+      {items.length === 0 && pending.length === 0 && (
+        <p className="text-sm text-gray-500">Belum ada file yang diunggah.</p>
+      )}
     </div>
   );
 }

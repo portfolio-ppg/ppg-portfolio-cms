@@ -27,19 +27,23 @@
 }
 
 :root {
-  /* ===== Soft Pink & Nude palette ===== */
-  --color-cream: #fdf6f3;       /* putih hangat nude — base background */
-  --color-cream-deep: #fdecec; /* nude pink pucat — section alt */
-  --color-white-warm: #fffaf8; /* highlight cards */
-  --color-stone: #e6c3bd;      /* nude dusty — border, divider */
-  --color-stone-soft: #f5ded9; /* nude pucat */
-  --color-clay: #eda4a3;       /* soft rose nude — accent utama */
-  --color-clay-deep: #d17f7e;  /* untuk hover/emphasis #d17f7e */
-  --color-sage: #f1b6b5;       /* nude pink — accent sekunder */
-  --color-sage-deep: #c48684;
-  --color-sea: #f5c8c7;        /* nude pink lembut — accent tersier */
-  --color-ink: #8a5c54;        /* nude coklat lembut — teks utama, bukan hitam pekat */
-  --color-ink-soft: #a67f77;   /* teks sekunder */
+  /* Fallback values only — every /[username] page overrides all of these
+     at runtime from its own Appearance template (see buildThemeCss), so
+     this block never actually reaches a visitor there. It's what admin/
+     login pages see instead (they never load a per-portfolio theme), so
+     it's kept neutral/navy — no pink here, on purpose. */
+  --color-cream: #f8fafc;
+  --color-cream-deep: #eef2f6;
+  --color-white-warm: #ffffff;
+  --color-stone: #d7dee6;
+  --color-stone-soft: #e8edf2;
+  --color-clay: #052d5d;
+  --color-clay-deep: #03203f;
+  --color-sage: #cd8d1f;
+  --color-sage-deep: #a5701a;
+  --color-sea: #052d5d;
+  --color-ink: #1f2937;
+  --color-ink-soft: #52606d;
 }
 
 @theme inline {

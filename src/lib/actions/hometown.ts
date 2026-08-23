@@ -32,7 +32,6 @@ export async function createHometownItemAction(username: string, formData: FormD
   portfolio.hometown.push({ id: newId(), ...data });
   await savePortfolio(portfolio);
   revalidatePath(`/${username}`);
-  revalidatePath("/admin/hometown");
 }
 
 export async function updateHometownItemAction(username: string, id: string, formData: FormData) {
@@ -42,7 +41,6 @@ export async function updateHometownItemAction(username: string, id: string, for
   portfolio.hometown[idx] = { id, ...fromForm(formData) };
   await savePortfolio(portfolio);
   revalidatePath(`/${username}`);
-  revalidatePath("/admin/hometown");
 }
 
 export async function deleteHometownItemAction(username: string, id: string) {
@@ -50,5 +48,4 @@ export async function deleteHometownItemAction(username: string, id: string) {
   portfolio.hometown = portfolio.hometown.filter((i) => i.id !== id);
   await savePortfolio(portfolio);
   revalidatePath(`/${username}`);
-  revalidatePath("/admin/hometown");
 }

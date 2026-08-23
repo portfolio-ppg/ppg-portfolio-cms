@@ -68,8 +68,8 @@ export default function AdminSidebar({
           </div>
         </div>
         {managingOther && (
-          <p className="mt-2 rounded-lg bg-gray-100 px-2.5 py-1.5 text-[11px] text-gray-600">
-            Mengelola: <span className="font-semibold text-gray-900">{asParam}</span>
+          <p className="mt-2 rounded-lg bg-gray-100 px-2.5 py-1.5 text-xs text-gray-500">
+            Mengelola: <span className="font-semibold text-gray-700">{asParam}</span>
           </p>
         )}
       </div>
@@ -107,7 +107,7 @@ export default function AdminSidebar({
             {managingOther && (
               <Link
                 href="/admin/users"
-                className="mb-1 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                className="mb-1 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
               >
                 <ArrowLeft size={14} />
                 Kembali ke daftar user
@@ -135,8 +135,8 @@ export default function AdminSidebar({
       </nav>
 
       <div className="space-y-1 border-t border-gray-100 px-3 py-4">
-        <p className="px-3 pb-1 text-xs text-gray-400">
-          Masuk sebagai <span className="font-medium text-gray-600">{displayName}</span>
+        <p className="px-3 pb-1 text-xs text-gray-500">
+          Masuk sebagai <span className="font-medium text-gray-700">{displayName}</span>
         </p>
         {(role === "user" || managingOther) && (
           <a

@@ -54,7 +54,7 @@ export default function HomeContent({
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-clay/40 bg-white-warm px-4 py-1.5 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-clay-deep">
               <svg width="11" height="11" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d=" M50 4 C52 32 68 48 96 50 C68 52 52 68 50 96 C48 68 32 52 4 50 C32 48 48 32 50 4 Z "></path></svg>
-              Portofolio {profile.role} {profile.program}
+              Portofolio Seminar {profile.role} {profile.program}
             </span>
 
             <h1 className="mt-6 font-display text-[30px] leading-[1.1] text-ink sm:text-5xl lg:text-6xl">

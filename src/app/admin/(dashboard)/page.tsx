@@ -92,13 +92,13 @@ async function AdminOverview({ displayName }: { displayName: string }) {
             <Users size={20} strokeWidth={2} />
           </span>
           <div>
-            <p className="text-sm font-semibold">Manajemen User</p>
-            <p className="mt-0.5 text-xs text-gray-300">
+            <p className="text-sm font-semibold text-white">Manajemen User</p>
+            <p className="mt-0.5 text-xs text-white/70">
               Tambah pengguna baru, edit username, reset kata sandi, atau kelola portofolio mereka
             </p>
           </div>
         </div>
-        <ArrowRight size={16} className="text-gray-300 transition-transform group-hover:translate-x-1 group-hover:text-white" />
+        <ArrowRight size={16} className="text-white/70 transition-transform group-hover:translate-x-1 group-hover:text-white" />
       </Link>
 
       {regularUsers.length > 0 && (

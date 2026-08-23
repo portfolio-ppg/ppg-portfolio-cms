@@ -46,8 +46,9 @@ export async function createTaskAction(username: string, formData: FormData) {
   portfolio.tasks.unshift(item);
   await savePortfolio(portfolio);
 
+  // Not revalidating /admin/tasks: the admin UI already updates itself
+  // optimistically, and a background refresh here only adds perceived lag.
   revalidatePath(`/${username}/tugas`);
-  revalidatePath("/admin/tasks");
 }
 
 export async function deleteTaskAction(username: string, id: string) {
@@ -55,5 +56,4 @@ export async function deleteTaskAction(username: string, id: string) {
   portfolio.tasks = portfolio.tasks.filter((i) => i.id !== id);
   await savePortfolio(portfolio);
   revalidatePath(`/${username}/tugas`);
-  revalidatePath("/admin/tasks");
 }

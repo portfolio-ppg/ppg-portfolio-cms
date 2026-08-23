@@ -43,6 +43,5 @@ export async function updateAppearanceAction(
   await savePortfolio(portfolio);
 
   revalidatePath(`/${username}`, "layout");
-  revalidatePath("/admin/appearance");
   return { ok: true };
 }

@@ -51,6 +51,5 @@ export async function updateProfileAction(
   await savePortfolio(portfolio);
 
   revalidatePath(`/${username}`);
-  revalidatePath("/admin/profile");
   return { ok: true };
 }

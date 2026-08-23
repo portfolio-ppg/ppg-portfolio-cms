@@ -21,7 +21,7 @@ export default async function HometownAdminPage({
             : "Kartu-kartu yang menampilkan profil kampung halaman: judul, deskripsi, gambar, dan keterangan gambar."
         }
       />
-      <HometownManager items={portfolio.hometown} username={targetUsername} />
+      <HometownManager items={portfolio.hometown} media={portfolio.media} username={targetUsername} />
     </div>
   );
 }

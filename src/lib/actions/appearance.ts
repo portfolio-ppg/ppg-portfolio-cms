@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { requireSessionUser, canManagePortfolio } from "@/lib/auth";
 import { getPortfolio, savePortfolio } from "@/lib/data";
-import type { Appearance, PaletteType, TemplateId } from "@/lib/types";
+import { getLayout } from "@/lib/layouts";
+import { getFontPair } from "@/lib/fonts";
+import type { Appearance, PaletteType, TemplateId, LayoutId, FontPairId } from "@/lib/types";
 
 export async function updateAppearanceAction(
   _prevState: { ok?: boolean; error?: string } | undefined,
@@ -18,6 +20,8 @@ export async function updateAppearanceAction(
 
   const appearance: Appearance = {
     templateId: String(formData.get("templateId") || "nature") as TemplateId,
+    layoutId: getLayout(String(formData.get("layoutId") || "") as LayoutId).id,
+    fontId: getFontPair(String(formData.get("fontId") || "") as FontPairId).id,
     paletteType: String(formData.get("paletteType") || "solid") as PaletteType,
     solidColor: String(formData.get("solidColor") || "#eda4a3"),
     gradientFrom: String(formData.get("gradientFrom") || "#eda4a3"),

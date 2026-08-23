@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useOptimistic, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
 import {
@@ -10,15 +10,82 @@ import {
 } from "@/lib/actions/hometown";
 import { Field, inputClass, buttonPrimaryClass, buttonSecondaryClass, Card } from "@/components/admin/ui";
 import ImagePicker from "@/components/admin/ImagePicker";
+import { useToast } from "@/components/admin/Toast";
 import type { HometownItem } from "@/lib/types";
 
+type HometownAction =
+  | { type: "add"; item: HometownItem }
+  | { type: "update"; item: HometownItem }
+  | { type: "delete"; id: string };
+
+function fromForm(formData: FormData): Omit<HometownItem, "id"> {
+  return {
+    label: String(formData.get("label") || "").trim(),
+    title: String(formData.get("title") || "").trim(),
+    description: String(formData.get("description") || "").trim(),
+    image: String(formData.get("image") || "").trim(),
+    imageAlt: String(formData.get("imageAlt") || "").trim(),
+  };
+}
+
 export default function HometownManager({ items, username }: { items: HometownItem[]; username: string }) {
+  const toast = useToast();
+  const [, startTransition] = useTransition();
+  const tempId = useRef(0);
   const [editing, setEditing] = useState<HometownItem | "new" | null>(null);
+
+  const [optimisticItems, applyItem] = useOptimistic<HometownItem[], HometownAction>(items, (state, action) => {
+    if (action.type === "add") return [...state, action.item];
+    if (action.type === "update") return state.map((i) => (i.id === action.item.id ? action.item : i));
+    if (action.type === "delete") return state.filter((i) => i.id !== action.id);
+    return state;
+  });
+
+  async function handleCreate(formData: FormData) {
+    const data = fromForm(formData);
+    applyItem({ type: "add", item: { id: `optimistic-${++tempId.current}`, ...data } });
+    setEditing(null);
+    toast(`Tempat "${data.title}" berhasil ditambahkan.`);
+    try {
+      await createHometownItemAction(username, formData);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Gagal menambahkan tempat.", "error");
+    }
+  }
+
+  async function handleUpdate(id: string, formData: FormData) {
+    const data = fromForm(formData);
+    applyItem({ type: "update", item: { id, ...data } });
+    setEditing(null);
+    toast(`Tempat "${data.title}" berhasil diperbarui.`);
+    try {
+      await updateHometownItemAction(username, id, formData);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Gagal memperbarui tempat.", "error");
+    }
+  }
+
+  function handleDelete(id: string, title: string) {
+    startTransition(async () => {
+      applyItem({ type: "delete", id });
+      toast(`Tempat "${title}" berhasil dihapus.`);
+      try {
+        await deleteHometownItemAction(username, id);
+      } catch {
+        toast("Gagal menghapus tempat. Coba lagi.", "error");
+      }
+    });
+  }
 
   return (
     <div className="space-y-6">
       {editing ? (
-        <ItemForm item={editing === "new" ? null : editing} username={username} onClose={() => setEditing(null)} />
+        <ItemForm
+          item={editing === "new" ? null : editing}
+          username={username}
+          onSubmit={editing === "new" ? handleCreate : (fd) => handleUpdate((editing as HometownItem).id, fd)}
+          onClose={() => setEditing(null)}
+        />
       ) : (
         <button onClick={() => setEditing("new")} className={buttonPrimaryClass}>
           <Plus size={16} /> Tambah Tempat
@@ -26,7 +93,7 @@ export default function HometownManager({ items, username }: { items: HometownIt
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {items.map((item) => (
+        {optimisticItems.map((item) => (
           <Card key={item.id} className="flex gap-4">
             <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-lg bg-gray-100">
               {item.image && <Image src={item.image} alt="" fill sizes="96px" className="object-cover" />}
@@ -42,16 +109,17 @@ export default function HometownManager({ items, username }: { items: HometownIt
                 >
                   <Pencil size={12} /> Edit
                 </button>
-                <form action={deleteHometownItemAction.bind(null, username, item.id)}>
-                  <button className="flex items-center gap-1 text-xs font-medium text-red-600 hover:underline">
-                    <Trash2 size={12} /> Hapus
-                  </button>
-                </form>
+                <button
+                  onClick={() => handleDelete(item.id, item.title)}
+                  className="flex items-center gap-1 text-xs font-medium text-red-600 hover:underline"
+                >
+                  <Trash2 size={12} /> Hapus
+                </button>
               </div>
             </div>
           </Card>
         ))}
-        {items.length === 0 && (
+        {optimisticItems.length === 0 && (
           <p className="text-sm text-gray-500">Belum ada item tempat asal.</p>
         )}
       </div>
@@ -62,16 +130,14 @@ export default function HometownManager({ items, username }: { items: HometownIt
 function ItemForm({
   item,
   username,
+  onSubmit,
   onClose,
 }: {
   item: HometownItem | null;
   username: string;
+  onSubmit: (formData: FormData) => void | Promise<void>;
   onClose: () => void;
 }) {
-  const action = item
-    ? updateHometownItemAction.bind(null, username, item.id)
-    : createHometownItemAction.bind(null, username);
-
   return (
     <Card className="space-y-4">
       <div className="flex items-center justify-between">
@@ -83,13 +149,7 @@ function ItemForm({
         </button>
       </div>
 
-      <form
-        action={async (formData) => {
-          await action(formData);
-          onClose();
-        }}
-        className="space-y-4"
-      >
+      <form action={onSubmit} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Label singkat (mis. Pantai)">
             <input name="label" defaultValue={item?.label} className={inputClass} />

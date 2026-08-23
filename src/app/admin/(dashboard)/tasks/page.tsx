@@ -24,6 +24,7 @@ export default async function TasksAdminPage({
       <TasksManager
         tasks={portfolio.tasks}
         categories={portfolio.taskCategories}
+        media={portfolio.media}
         username={targetUsername}
       />
     </div>

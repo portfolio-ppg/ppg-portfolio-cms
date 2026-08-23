@@ -58,8 +58,32 @@ export type TemplateId =
   | "lavender"
   | "charcoal";
 
+/** Structural layout of the public portfolio page — independent of the color Template. */
+export type LayoutId =
+  | "classic"
+  | "mirrored"
+  | "centered"
+  | "editorial"
+  | "soft-card"
+  | "bold-lines"
+  | "split-banner"
+  | "compact";
+
+/** Heading/body font pairing for the public portfolio page. */
+export type FontPairId =
+  | "fraunces-jakarta"
+  | "sora-inter"
+  | "playfair-source"
+  | "baloo-nunito"
+  | "grotesk-plex"
+  | "lora-mulish"
+  | "poppins-work"
+  | "cormorant-karla";
+
 export interface Appearance {
   templateId: TemplateId;
+  layoutId: LayoutId;
+  fontId: FontPairId;
   paletteType: PaletteType;
   solidColor: string;
   gradientFrom: string;

@@ -1,13 +1,20 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { updateProfileAction } from "@/lib/actions/profile";
 import { Field, inputClass, buttonPrimaryClass, Card } from "@/components/admin/ui";
 import ImagePicker from "@/components/admin/ImagePicker";
+import { useToast } from "@/components/admin/Toast";
 import type { Profile } from "@/lib/types";
 
 export default function ProfileForm({ profile, username }: { profile: Profile; username: string }) {
   const [state, formAction, pending] = useActionState(updateProfileAction, undefined);
+  const toast = useToast();
+
+  useEffect(() => {
+    if (state?.ok) toast("Profil berhasil disimpan.");
+    if (state?.error) toast(state.error, "error");
+  }, [state, toast]);
 
   return (
     <form action={formAction} className="space-y-6">
@@ -71,9 +78,6 @@ export default function ProfileForm({ profile, username }: { profile: Profile; u
           />
         </Field>
       </Card>
-
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-      {state?.ok && <p className="text-sm text-green-600">Profil berhasil disimpan.</p>}
 
       <button type="submit" disabled={pending} className={buttonPrimaryClass}>
         {pending ? "Menyimpan..." : "Simpan Profil"}

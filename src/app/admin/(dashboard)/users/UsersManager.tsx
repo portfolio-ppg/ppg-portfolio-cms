@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
 import { Plus, Trash2, KeyRound, X, ShieldCheck, User as UserIcon, ExternalLink, Pencil } from "lucide-react";
 import { createUserAction, deleteUserAction, resetPasswordAction, renameUserAction } from "@/lib/actions/users";
 import { Field, inputClass, buttonPrimaryClass, buttonSecondaryClass, Card, Badge } from "@/components/admin/ui";
+import { useToast } from "@/components/admin/Toast";
 
 interface SafeUser {
   username: string;
@@ -20,9 +21,28 @@ export default function UsersManager({
   users: SafeUser[];
   currentUsername: string;
 }) {
+  const toast = useToast();
+  const [, startTransition] = useTransition();
   const [adding, setAdding] = useState(false);
   const [resetTarget, setResetTarget] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<SafeUser | null>(null);
+
+  const [optimisticUsers, removeOptimisticUser] = useOptimistic<SafeUser[], string>(users, (state, username) =>
+    state.filter((u) => u.username !== username)
+  );
+
+  function handleDelete(username: string) {
+    if (!confirm(`Hapus pengguna "${username}"? Portofolionya juga akan terhapus.`)) return;
+    startTransition(async () => {
+      removeOptimisticUser(username);
+      toast(`Pengguna "${username}" berhasil dihapus.`);
+      try {
+        await deleteUserAction(username);
+      } catch {
+        toast("Gagal menghapus pengguna. Coba lagi.", "error");
+      }
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -35,7 +55,7 @@ export default function UsersManager({
       )}
 
       <div className="space-y-3">
-        {users.map((u) => (
+        {optimisticUsers.map((u) => (
           <Card key={u.username} className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-600">
@@ -80,17 +100,12 @@ export default function UsersManager({
                 <KeyRound size={12} /> Reset Sandi
               </button>
               {u.username !== currentUsername && (
-                <form
-                  action={async () => {
-                    if (confirm(`Hapus pengguna "${u.username}"? Portofolionya juga akan terhapus.`)) {
-                      await deleteUserAction(u.username);
-                    }
-                  }}
+                <button
+                  onClick={() => handleDelete(u.username)}
+                  className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
                 >
-                  <button className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50">
-                    <Trash2 size={12} /> Hapus
-                  </button>
-                </form>
+                  <Trash2 size={12} /> Hapus
+                </button>
               )}
             </div>
           </Card>
@@ -109,10 +124,15 @@ export default function UsersManager({
 
 function CreateUserForm({ onClose }: { onClose: () => void }) {
   const [state, formAction, pending] = useActionState(createUserAction, undefined);
+  const toast = useToast();
 
   useEffect(() => {
-    if (state?.ok) onClose();
-  }, [state?.ok, onClose]);
+    if (state?.ok) {
+      toast("Pengguna berhasil ditambahkan.");
+      onClose();
+    }
+    if (state?.error) toast(state.error, "error");
+  }, [state, onClose, toast]);
 
   return (
     <Card className="space-y-4">
@@ -159,10 +179,15 @@ function CreateUserForm({ onClose }: { onClose: () => void }) {
 
 function ResetPasswordModal({ username, onClose }: { username: string; onClose: () => void }) {
   const [state, formAction, pending] = useActionState(resetPasswordAction, undefined);
+  const toast = useToast();
 
   useEffect(() => {
-    if (state?.ok) onClose();
-  }, [state?.ok, onClose]);
+    if (state?.ok) {
+      toast("Kata sandi berhasil diperbarui.");
+      onClose();
+    }
+    if (state?.error) toast(state.error, "error");
+  }, [state, onClose, toast]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-6">
@@ -195,10 +220,15 @@ function ResetPasswordModal({ username, onClose }: { username: string; onClose: 
 
 function EditUserModal({ user, onClose }: { user: SafeUser; onClose: () => void }) {
   const [state, formAction, pending] = useActionState(renameUserAction, undefined);
+  const toast = useToast();
 
   useEffect(() => {
-    if (state?.ok) onClose();
-  }, [state?.ok, onClose]);
+    if (state?.ok) {
+      toast("Pengguna berhasil diperbarui.");
+      onClose();
+    }
+    if (state?.error) toast(state.error, "error");
+  }, [state, onClose, toast]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-6">

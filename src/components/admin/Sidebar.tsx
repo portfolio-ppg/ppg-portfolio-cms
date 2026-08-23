@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
@@ -51,10 +52,21 @@ export default function AdminSidebar({
   return (
     <>
       <div className="px-6 py-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-          CMS
-        </p>
-        <p className="mt-1 font-display text-lg text-gray-900">E-Portfolio Admin</p>
+        <div className="flex items-center gap-2.5">
+          <Image
+            src="/images/e-portfolio-logo.webp"
+            alt=""
+            width={28}
+            height={28}
+            className="rounded-lg"
+          />
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">
+              CMS
+            </p>
+            <p className="font-display text-lg leading-tight text-gray-900">E-Portfolio Admin</p>
+          </div>
+        </div>
         {managingOther && (
           <p className="mt-2 rounded-lg bg-gray-100 px-2.5 py-1.5 text-[11px] text-gray-600">
             Mengelola: <span className="font-semibold text-gray-900">{asParam}</span>

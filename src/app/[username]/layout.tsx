@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getPortfolio } from "@/lib/data";
 import { buildThemeCss } from "@/lib/theme";
+import { getLayout } from "@/lib/layouts";
 
 export async function generateMetadata({
   params,
@@ -40,7 +41,7 @@ export default async function UserPortfolioLayout({
   ];
 
   return (
-    <>
+    <div data-layout={getLayout(portfolio.appearance.layoutId).id}>
       {/* Per-user appearance overrides. Root layout has no <head> access this
           deep in the tree, but a plain <style> tag works anywhere in React. */}
       <style id="cms-theme" dangerouslySetInnerHTML={{ __html: themeCss }} />
@@ -57,6 +58,6 @@ export default async function UserPortfolioLayout({
         location={profile.campus}
         navItems={navItems}
       />
-    </>
+    </div>
   );
 }

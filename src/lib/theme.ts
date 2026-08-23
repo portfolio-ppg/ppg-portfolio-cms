@@ -1,4 +1,5 @@
 import type { Appearance } from "./types";
+import { getFontPair } from "./fonts";
 
 const HEX_RE = /^#[0-9a-fA-F]{3,8}$/;
 
@@ -42,6 +43,8 @@ export function buildThemeCss(a: Appearance): string {
   const border = safeColor(a.borderColor, "#f3d7da");
   const surface = safeColor(a.surfaceColor, "#ffffff");
 
+  const fontPair = getFontPair(a.fontId);
+
   let accent = safeColor(a.solidColor, "#eda4a3");
   let accentDeep = accent;
   let heroBackground = "";
@@ -81,6 +84,8 @@ export function buildThemeCss(a: Appearance): string {
   --color-ink: ${text};
   --color-ink-soft: ${textSoft};
   --hero-overlay-opacity: ${overlayOpacity};
+  --font-display: var(${fontPair.displayVar});
+  --font-body: var(${fontPair.bodyVar});
 }
 ${heroBackground}`;
 }

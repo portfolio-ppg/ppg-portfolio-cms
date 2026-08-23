@@ -11,6 +11,16 @@ export type Task = {
   href: string;
 };
 
+// Browsers ignore the `download` attribute on cross-origin links (e.g. Vercel
+// Blob URLs) and open the file instead — route those through our own API so
+// the response carries a same-origin Content-Disposition: attachment header.
+function getDownloadHref(task: Task): string {
+  if (!/^https?:\/\//i.test(task.href)) return task.href;
+  const ext = task.href.split(".").pop()?.split(/[?#]/)[0] || "";
+  const filename = `${task.title}${ext ? `.${ext}` : ""}`;
+  return `/api/download?url=${encodeURIComponent(task.href)}&name=${encodeURIComponent(filename)}`;
+}
+
 export default function TaskCard({ task, index }: { task: Task; index: number }) {
   return (
     <motion.div
@@ -45,7 +55,7 @@ export default function TaskCard({ task, index }: { task: Task; index: number })
       {task.href ? (
         <div className="flex shrink-0 items-center gap-2 self-start sm:self-auto">
           <a
-            href={task.href}
+            href={getDownloadHref(task)}
             download
             className="flex items-center justify-center gap-2 rounded-full border border-clay/50 px-4 py-2 text-[10px]! font-semibold text-clay-deep transition-colors duration-300 hover:bg-clay hover:text-white-warm"
           >

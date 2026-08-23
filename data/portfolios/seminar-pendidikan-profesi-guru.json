@@ -47,10 +47,22 @@
     }
   ],
   "taskCategories": [
-    { "id": "cat-sem1", "name": "Refleksi Pengalaman Belajar Semester 1" },
-    { "id": "cat-sem2", "name": "Refleksi Pengalaman Belajar Semester 2" },
-    { "id": "cat-refleksi-ppg", "name": "Refleksi PPG Secara Keseluruhan" },
-    { "id": "cat-karya-inovasi", "name": "Karya Inovasi Pendidikan" }
+    {
+      "id": "cat-sem1",
+      "name": "Refleksi Pengalaman Belajar Semester 1"
+    },
+    {
+      "id": "cat-sem2",
+      "name": "Refleksi Pengalaman Belajar Semester 2"
+    },
+    {
+      "id": "cat-refleksi-ppg",
+      "name": "Refleksi PPG Secara Keseluruhan"
+    },
+    {
+      "id": "cat-karya-inovasi",
+      "name": "Karya Inovasi Pendidikan"
+    }
   ],
   "tasks": [
     {
@@ -65,6 +77,8 @@
   ],
   "appearance": {
     "templateId": "charcoal",
+    "layoutId": "classic",
+    "fontId": "fraunces-jakarta",
     "paletteType": "solid",
     "solidColor": "#52525b",
     "gradientFrom": "#3f3f46",

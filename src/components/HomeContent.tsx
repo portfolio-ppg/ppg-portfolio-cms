@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Marquee from "@/components/Marquee";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import NatureCard from "@/components/NatureCard";
@@ -43,8 +43,8 @@ export default function HomeContent({
           className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink/10 via-ink/0 to-cream"
           style={{ opacity: "var(--hero-overlay-opacity, 0)" }}
         />
-        <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-clay/10 blur-3xl" />
-        <div className="pointer-events-none absolute -left-16 top-40 h-56 w-56 rounded-full bg-sage/10 blur-3xl" />
+        <div className="decor-blob pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-clay/10 blur-3xl" />
+        <div className="decor-blob pointer-events-none absolute -left-16 top-40 h-56 w-56 rounded-full bg-sage/10 blur-3xl" />
 
         <div className="header-section mx-auto flex max-w-6xl flex-col-reverse items-center gap-10 px-6 py-12 text-center md:grid md:grid-cols-[1.1fr_0.9fr] md:items-center md:gap-14 md:px-10 md:py-12 md:text-left lg:px-10 lg:py-24">
           <motion.div

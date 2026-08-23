@@ -178,6 +178,8 @@ function defaultAppearance(): Appearance {
   const d = TEMPLATE_DEFAULTS.nature;
   return {
     templateId: "nature",
+    layoutId: "classic",
+    fontId: "fraunces-jakarta",
     paletteType: "solid",
     solidColor: d.solidColor,
     gradientFrom: d.gradientFrom,

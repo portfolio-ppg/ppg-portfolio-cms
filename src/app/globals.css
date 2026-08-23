@@ -98,3 +98,80 @@ h1, h2, h3, h4, .font-display {
     font-size: 14px;
   }
 }
+
+/* =====================================================================
+   Layout variants (Tampilan → Layout Halaman). "classic" is the baseline
+   markup/styling already in HomeContent.tsx and needs no overrides here —
+   every other layoutId only tweaks arrangement/spacing/decoration, never
+   the color or font CSS variables (those come from buildThemeCss).
+   ===================================================================== */
+
+/* Cermin — mirror the hero: photo on the left, text on the right. */
+[data-layout="mirrored"] .header-section > *:first-child { order: 2; }
+[data-layout="mirrored"] .header-section > *:last-child { order: 1; }
+
+/* Terpusat — single centered column instead of a two-column hero. */
+[data-layout="centered"] .header-section {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+}
+[data-layout="centered"] .header-section p { margin-left: auto; margin-right: auto; }
+[data-layout="centered"] .header-section .mt-8 { justify-content: center; }
+[data-layout="centered"] .header-section dl { justify-content: center; }
+
+/* Editorial — no decorative blobs, clean divider lines, more whitespace. */
+[data-layout="editorial"] .decor-blob { display: none; }
+[data-layout="editorial"] .about-section,
+[data-layout="editorial"] .visi-misi-section,
+[data-layout="editorial"] .kampung-halaman-section {
+  border-top: 1px solid var(--color-stone);
+}
+[data-layout="editorial"] .header-section {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+/* Kartu Lembut — sections float as soft white cards with a shadow. */
+[data-layout="soft-card"] .about-section > div,
+[data-layout="soft-card"] .visi-misi-section > div,
+[data-layout="soft-card"] .kampung-halaman-section > div {
+  background: var(--color-white-warm);
+  border-radius: 1.75rem;
+  padding: 1.75rem;
+  box-shadow: 0 18px 45px -28px rgba(0, 0, 0, 0.4);
+}
+
+/* Garis Tegas — sharper corners, bolder borders, no soft blur decoration. */
+[data-layout="bold-lines"] .decor-blob { display: none; }
+[data-layout="bold-lines"] .rounded-full { border-radius: 0.5rem; }
+[data-layout="bold-lines"] .border { border-width: 2px; }
+[data-layout="bold-lines"] .about-section,
+[data-layout="bold-lines"] .visi-misi-section,
+[data-layout="bold-lines"] .kampung-halaman-section {
+  border-top: 2px solid var(--color-ink);
+}
+
+/* Split Banner — a soft accent panel behind the profile photo. */
+[data-layout="split-banner"] .decor-blob { display: none; }
+[data-layout="split-banner"] .header-section > *:last-child {
+  position: relative;
+}
+[data-layout="split-banner"] .header-section > *:last-child::before {
+  content: "";
+  position: absolute;
+  inset: -1.5rem;
+  z-index: -1;
+  border-radius: 2rem;
+  background: color-mix(in srgb, var(--color-clay) 22%, transparent);
+}
+
+/* Compact — denser section spacing for shorter pages. */
+[data-layout="compact"] .header-section,
+[data-layout="compact"] .about-section,
+[data-layout="compact"] .visi-misi-section,
+[data-layout="compact"] .kampung-halaman-section {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  gap: 1.5rem;
+}

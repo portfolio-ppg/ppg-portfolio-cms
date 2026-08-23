@@ -1,11 +1,60 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { updateAppearanceAction } from "@/lib/actions/appearance";
 import { Field, buttonPrimaryClass, Card } from "@/components/admin/ui";
 import ImagePicker from "@/components/admin/ImagePicker";
+import { useToast } from "@/components/admin/Toast";
 import { TEMPLATES, TEMPLATE_DEFAULTS } from "@/lib/templates";
-import type { Appearance, PaletteType, TemplateId } from "@/lib/types";
+import { LAYOUTS } from "@/lib/layouts";
+import { FONT_PAIRS } from "@/lib/fonts";
+import type { Appearance, PaletteType, TemplateId, LayoutId } from "@/lib/types";
+
+/** Small illustrative mock of each layout's hero arrangement — purely decorative. */
+function LayoutPreview({ id }: { id: LayoutId }) {
+  const mirrored = id === "mirrored";
+  const centered = id === "centered";
+  const sharp = id === "editorial" || id === "bold-lines";
+  const thick = id === "bold-lines";
+  const banner = id === "split-banner";
+  const card = id === "soft-card";
+  const compact = id === "compact";
+
+  const textBlock = (
+    <div className={`flex flex-col justify-center gap-1.5 ${centered ? "items-center" : ""}`}>
+      <div className="h-1.5 w-10 rounded-full bg-gray-400" />
+      <div className="h-1.5 w-14 rounded-full bg-gray-300" />
+      <div className="h-1.5 w-8 rounded-full bg-gray-300" />
+    </div>
+  );
+
+  const imageBlock = (
+    <div className={`relative flex h-9 w-9 shrink-0 items-center justify-center ${sharp ? "rounded-md" : "rounded-full"} bg-gray-300`}>
+      {banner && <span className="absolute -inset-1.5 -z-10 rounded-lg bg-gray-200" />}
+    </div>
+  );
+
+  return (
+    <div
+      className={`flex h-16 w-full items-center bg-gray-50 p-3 ${
+        card ? "rounded-2xl border border-gray-200 shadow-sm" : sharp ? "rounded-md border border-gray-200" : "rounded-xl border border-gray-200"
+      } ${thick ? "border-2 border-gray-400" : ""}`}
+    >
+      <div
+        className={`flex w-full ${compact ? "gap-2" : "gap-3"} ${
+          centered
+            ? "flex-col items-center justify-center"
+            : mirrored
+              ? "flex-row-reverse items-center justify-between"
+              : "items-center justify-between"
+        }`}
+      >
+        {textBlock}
+        {imageBlock}
+      </div>
+    </div>
+  );
+}
 
 const PALETTE_OPTIONS: { id: PaletteType; label: string }[] = [
   { id: "solid", label: "Warna Solid" },
@@ -22,6 +71,12 @@ export default function AppearanceForm({
 }) {
   const [state, formAction, pending] = useActionState(updateAppearanceAction, undefined);
   const [values, setValues] = useState<Appearance>(appearance);
+  const toast = useToast();
+
+  useEffect(() => {
+    if (state?.ok) toast("Tampilan berhasil disimpan.");
+    if (state?.error) toast(state.error, "error");
+  }, [state, toast]);
 
   function applyTemplate(id: TemplateId) {
     setValues((v) => ({ ...v, templateId: id, ...TEMPLATE_DEFAULTS[id] }));
@@ -35,6 +90,8 @@ export default function AppearanceForm({
     <form action={formAction} className="space-y-6">
       <input type="hidden" name="username" value={username} />
       <input type="hidden" name="templateId" value={values.templateId} />
+      <input type="hidden" name="layoutId" value={values.layoutId} />
+      <input type="hidden" name="fontId" value={values.fontId} />
       <input type="hidden" name="paletteType" value={values.paletteType} />
       <input type="hidden" name="solidColor" value={values.solidColor} />
       <input type="hidden" name="gradientFrom" value={values.gradientFrom} />
@@ -66,6 +123,61 @@ export default function AppearanceForm({
               <div className="h-16 w-full rounded-xl" style={{ background: t.preview }} />
               <p className="mt-3 text-sm font-semibold text-gray-900">{t.name}</p>
               <p className="mt-1 text-xs text-gray-500">{t.description}</p>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card>
+        <p className="mb-4 text-sm font-semibold text-gray-900">
+          Layout Halaman <span className="font-normal text-gray-400">({LAYOUTS.length} pilihan)</span>
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {LAYOUTS.map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              onClick={() => set("layoutId", l.id)}
+              className={`rounded-2xl border p-4 text-left transition-all ${
+                values.layoutId === l.id
+                  ? "border-gray-900 ring-2 ring-gray-200"
+                  : "border-gray-200 hover:border-gray-400"
+              }`}
+            >
+              <LayoutPreview id={l.id} />
+              <p className="mt-3 text-sm font-semibold text-gray-900">{l.name}</p>
+              <p className="mt-1 text-xs text-gray-500">{l.description}</p>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card>
+        <p className="mb-4 text-sm font-semibold text-gray-900">
+          Tipografi <span className="font-normal text-gray-400">({FONT_PAIRS.length} pilihan)</span>
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {FONT_PAIRS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => set("fontId", f.id)}
+              className={`rounded-2xl border p-4 text-left transition-all ${
+                values.fontId === f.id
+                  ? "border-gray-900 ring-2 ring-gray-200"
+                  : "border-gray-200 hover:border-gray-400"
+              }`}
+            >
+              <div className="flex h-16 w-full flex-col items-center justify-center rounded-xl border border-gray-200 bg-gray-50 px-2">
+                <p className="text-lg text-gray-900" style={{ fontFamily: `var(${f.displayVar})` }}>
+                  Aa
+                </p>
+                <p className="text-[11px] text-gray-500" style={{ fontFamily: `var(${f.bodyVar})` }}>
+                  {f.previewBody}
+                </p>
+              </div>
+              <p className="mt-3 text-sm font-semibold text-gray-900">{f.name}</p>
+              <p className="mt-1 text-xs text-gray-500">{f.description}</p>
             </button>
           ))}
         </div>
@@ -214,9 +326,6 @@ export default function AppearanceForm({
           </Field>
         </div>
       </Card>
-
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-      {state?.ok && <p className="text-sm text-green-600">Tampilan berhasil disimpan.</p>}
 
       <button type="submit" disabled={pending} className={buttonPrimaryClass}>
         {pending ? "Menyimpan..." : "Simpan Tampilan"}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Upload, Trash2, FileText, Copy, Check, Loader2 } from "lucide-react";
 import { deleteMediaAction } from "@/lib/actions/media";
 import { buttonPrimaryClass, Card } from "@/components/admin/ui";
+import { useToast } from "@/components/admin/Toast";
 import type { MediaItem } from "@/lib/types";
 
 function formatSize(bytes: number): string {
@@ -28,10 +29,12 @@ export default function MediaLibrary({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
 
   async function uploadFiles(files: FileList | File[]) {
     setUploading(true);
     setError(null);
+    let uploaded = 0;
     for (const file of Array.from(files)) {
       try {
         const formData = new FormData();
@@ -41,12 +44,18 @@ export default function MediaLibrary({
         const data = await res.json();
         if (!res.ok) {
           setError(data.error || `Gagal mengunggah ${file.name}.`);
+          toast(data.error || `Gagal mengunggah ${file.name}.`, "error");
         } else {
           setItems((prev) => [data.item, ...prev]);
+          uploaded++;
         }
       } catch {
         setError(`Gagal mengunggah ${file.name}.`);
+        toast(`Gagal mengunggah ${file.name}.`, "error");
       }
+    }
+    if (uploaded > 0) {
+      toast(uploaded === 1 ? "File berhasil diunggah." : `${uploaded} file berhasil diunggah.`);
     }
     setUploading(false);
   }
@@ -60,8 +69,15 @@ export default function MediaLibrary({
   }
 
   async function handleDelete(id: string) {
+    const removed = items.find((m) => m.id === id);
     setItems((prev) => prev.filter((m) => m.id !== id));
-    await deleteMediaAction(username, id);
+    toast("File berhasil dihapus.");
+    try {
+      await deleteMediaAction(username, id);
+    } catch {
+      if (removed) setItems((prev) => [removed, ...prev]);
+      toast("Gagal menghapus file. Coba lagi.", "error");
+    }
   }
 
   return (

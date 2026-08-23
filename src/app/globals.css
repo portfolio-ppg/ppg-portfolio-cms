@@ -1,5 +1,31 @@
 @import "tailwindcss";
 
+/* Admin/backend palette (login, /admin, dashboards) — derived from the
+   e-portfolio-logo mark (navy + gold). Remapping Tailwind's neutral "gray"
+   scale here re-colors every existing gray-tinted utility class (bg, text,
+   border, ring) already used across the admin UI, without having to touch
+   each component. Deliberately NOT touched: the public portfolio pages
+   under /[username], which use their own cream/clay/ink palette above and
+   are untouched by the gray scale. */
+@theme {
+  --color-gray-50: color-mix(in srgb, #052d5d 4%, white);
+  --color-gray-100: color-mix(in srgb, #052d5d 8%, white);
+  --color-gray-200: color-mix(in srgb, #052d5d 16%, white);
+  --color-gray-300: color-mix(in srgb, #052d5d 28%, white);
+  --color-gray-400: color-mix(in srgb, #052d5d 48%, white);
+  --color-gray-500: color-mix(in srgb, #052d5d 68%, white);
+  --color-gray-600: color-mix(in srgb, #052d5d 82%, white);
+  --color-gray-700: color-mix(in srgb, #052d5d 91%, white);
+  --color-gray-800: color-mix(in srgb, #052d5d 97%, white);
+  --color-gray-900: #052d5d;
+  --color-gold-50: color-mix(in srgb, #cd8d1f 6%, white);
+  --color-gold-100: color-mix(in srgb, #cd8d1f 15%, white);
+  --color-gold-200: color-mix(in srgb, #cd8d1f 30%, white);
+  --color-gold-400: color-mix(in srgb, #cd8d1f 70%, white);
+  --color-gold-500: #cd8d1f;
+  --color-gold-600: color-mix(in srgb, #cd8d1f 85%, black);
+}
+
 :root {
   /* ===== Soft Pink & Nude palette ===== */
   --color-cream: #fdf6f3;       /* putih hangat nude — base background */

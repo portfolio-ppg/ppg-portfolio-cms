@@ -15,9 +15,24 @@ export async function generateMetadata({
   const portfolio = await getPortfolio(username);
   if (!portfolio) return {};
   const { profile } = portfolio;
+  const title = `E-Portfolio - ${profile.name}`;
+  const description = `E-portofolio ${profile.role.toLowerCase()} ${profile.program}, ${profile.campus}, asal ${profile.originRegion}.`;
   return {
-    title: `E-Portfolio - ${profile.name}`,
-    description: `E-portofolio ${profile.role.toLowerCase()} ${profile.program}, ${profile.campus}, asal ${profile.originRegion}.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: "/images/e-portfolio-og.png", width: 1200, height: 630, alt: title }],
+      locale: "id_ID",
+      type: "profile",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/images/e-portfolio-og.png"],
+    },
   };
 }
 

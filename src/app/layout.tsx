@@ -61,10 +61,27 @@ const fontVariables = [
   karla.variable,
 ].join(" ");
 
+const title = "PPG Portfolio — Digital Teaching Portfolio";
+const description = "Platform e-portofolio multi-pengguna untuk mahasiswa PPG Prajabatan.";
+
 export const metadata: Metadata = {
-  title: "PPG Portfolio — Digital Teaching Portfolio",
-  description: "Platform e-portofolio multi-pengguna untuk mahasiswa PPG Prajabatan.",
-  icons: { icon: "/images/e-portfolio-logo.webp" },
+  metadataBase: new URL("https://ppg-portfolio.vercel.app"),
+  title,
+  description,
+  icons: { icon: "/images/e-portfolio-logo-white.png" },
+  openGraph: {
+    title,
+    description,
+    images: [{ url: "/images/e-portfolio-og.png", width: 1200, height: 630, alt: title }],
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: ["/images/e-portfolio-og.png"],
+  },
 };
 
 export default function RootLayout({

@@ -54,7 +54,7 @@ export function Badge({
 }) {
   const toneClass =
     tone === "dark"
-      ? "bg-gray-900 text-white"
+      ? "bg-gold-500 text-white"
       : tone === "danger"
         ? "bg-red-50 text-red-600"
         : "bg-gray-100 text-gray-600";

@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import Marquee from "@/components/Marquee";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import NatureCard from "@/components/NatureCard";
@@ -80,7 +79,8 @@ export default function HomeContent({
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-clay/40 bg-white-warm px-4 py-1.5 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-clay-deep">
               <svg width="11" height="11" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d=" M50 4 C52 32 68 48 96 50 C68 52 52 68 50 96 C48 68 32 52 4 50 C32 48 48 32 50 4 Z "></path></svg>
-              Portofolio {humanizeSlug(username)}
+              <span className="md:hidden">Portofolio</span>
+              <span className="hidden md:inline">Portofolio {humanizeSlug(username)}</span>
             </span>
 
             <h1 className="mt-6 font-display text-[30px] leading-[1.1] text-ink sm:text-5xl lg:text-6xl">
@@ -97,10 +97,6 @@ export default function HomeContent({
                 className="group inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-cream transition-colors duration-300 hover:bg-clay-deep"
               >
                 Lihat Daftar Tugas
-                <ArrowRight
-                  size={15}
-                  className="transition-transform duration-300 group-hover:translate-x-1"
-                />
               </Link>
               {hometown.length > 0 && (
                 <a
@@ -115,7 +111,7 @@ export default function HomeContent({
                   href="#profil-sekolah"
                   className="inline-flex items-center gap-2 rounded-full border border-stone/50 px-6 py-3 text-sm font-semibold text-ink-soft transition-colors duration-300 hover:border-clay hover:text-ink"
                 >
-                  Kenali Profil Sekolah PPL
+                  Lihat Profil Sekolah PPL
                 </a>
               )}
             </div>

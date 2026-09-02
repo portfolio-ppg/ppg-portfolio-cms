@@ -10,6 +10,19 @@ import NatureCard from "@/components/NatureCard";
 import { getAvatarShadow, getAvatarAnimation } from "@/lib/avatar-effects";
 import type { Profile, SchoolProfile, HometownItem, Appearance } from "@/lib/types";
 
+// Small set of acronyms that should stay fully uppercase instead of
+// title-casing (e.g. "ppg" -> "PPG", not "Ppg") when turning a username/URL
+// slug like "seminar-mahasiswi-ppg-prajabatan" into display text.
+const SLUG_ACRONYMS: Record<string, string> = { ppg: "PPG" };
+
+function humanizeSlug(slug: string): string {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((word) => SLUG_ACRONYMS[word.toLowerCase()] ?? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
 export default function HomeContent({
   username,
   profile,
@@ -67,7 +80,7 @@ export default function HomeContent({
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-clay/40 bg-white-warm px-4 py-1.5 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-clay-deep">
               <svg width="11" height="11" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d=" M50 4 C52 32 68 48 96 50 C68 52 52 68 50 96 C48 68 32 52 4 50 C32 48 48 32 50 4 Z "></path></svg>
-              Portofolio Seminar {profile.role} {profile.program}
+              Portofolio {humanizeSlug(username)}
             </span>
 
             <h1 className="mt-6 font-display text-[30px] leading-[1.1] text-ink sm:text-5xl lg:text-6xl">
@@ -97,6 +110,14 @@ export default function HomeContent({
                   Kenali Kampung Halamanku
                 </a>
               )}
+              {(schoolProfile.name || schoolProfile.description || schoolProfile.logoUrl) && (
+                <a
+                  href="#profil-sekolah"
+                  className="inline-flex items-center gap-2 rounded-full border border-stone/50 px-6 py-3 text-sm font-semibold text-ink-soft transition-colors duration-300 hover:border-clay hover:text-ink"
+                >
+                  Kenali Profil Sekolah PPL
+                </a>
+              )}
             </div>
 
             <dl className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-stone/25 pt-10 min-[767px]:flex-row min-[767px]:pt-6">
@@ -119,7 +140,9 @@ export default function HomeContent({
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
             className="relative mx-auto w-full max-w-sm"
           >
-            <div className="animate-float-slow absolute -inset-4 -z-10 rounded-[46%_54%_58%_42%/48%_42%_58%_52%] bg-sage/15 blur-2xl" />
+            {appearance.avatarShadow !== "none" && (
+              <div className="animate-float-slow absolute -inset-4 -z-10 rounded-[46%_54%_58%_42%/48%_42%_58%_52%] bg-sage/15 blur-2xl" />
+            )}
             <div className={`aspect-[5/6] w-full ${avatarAnimationClass}`}>
               <ProfileAvatar
                 src={profile.avatarUrl || undefined}
@@ -169,32 +192,32 @@ export default function HomeContent({
 
       {/* ===== PROFIL SEKOLAH ===== */}
       {(schoolProfile.name || schoolProfile.description || schoolProfile.logoUrl) && (
-        <section className="school-section py-12 text-center md:py-12 md:text-left lg:py-24">
+        <section id="profil-sekolah" className="school-section py-12 text-center md:py-12 md:text-left lg:py-24">
           <div className="mx-auto max-w-6xl px-6 md:px-10 lg:px-10">
-            <div className="grid gap-8 md:grid-cols-2 md:items-center md:gap-12">
+            <div className="grid gap-8 md:grid-cols-2 md:items-start md:gap-12">
               <div>
                 <p className="text-[10px]! font-semibold uppercase tracking-[0.18em] text-clay-deep sm:text-[12px]">
                   Profil Sekolah
                 </p>
-                <div className="mt-3 flex flex-col items-center gap-4 sm:flex-row md:items-center">
-                  {schoolProfile.logoUrl && (
-                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-stone/40 bg-white-warm">
-                      <Image
-                        src={schoolProfile.logoUrl}
-                        alt={`Logo ${schoolProfile.name}`}
-                        fill
-                        sizes="64px"
-                        className="object-contain p-2"
-                      />
-                    </div>
-                  )}
-                  <h2 className="font-display text-[24px] text-ink md:text-[36px]">{schoolProfile.name}</h2>
-                </div>
+
+                {schoolProfile.logoUrl && (
+                  <div className="relative mx-auto mt-4 aspect-square w-20 shrink-0 overflow-hidden rounded-2xl border border-stone/40 bg-white-warm sm:w-[110px] md:mx-0">
+                    <Image
+                      src={schoolProfile.logoUrl}
+                      alt={`Logo ${schoolProfile.name}`}
+                      fill
+                      sizes="110px"
+                      className="object-contain p-2"
+                    />
+                  </div>
+                )}
+
+                <h2 className="mt-4 font-display text-[24px] text-ink md:text-[36px]">{schoolProfile.name}</h2>
                 <p className="mt-5 text-[15px] leading-relaxed text-ink-soft">{schoolProfile.description}</p>
               </div>
 
               {schoolProfile.name && (
-                <div className="h-72 w-full overflow-hidden rounded-2xl border border-stone/40 md:h-80">
+                <div className="h-72 w-full overflow-hidden rounded-2xl border border-stone/40 md:sticky md:top-[calc(var(--header-h)+3rem)] md:h-80 lg:top-[calc(var(--header-h)+6rem)]">
                   <iframe
                     title={`Peta lokasi ${schoolProfile.name}`}
                     src={`https://www.google.com/maps?q=${encodeURIComponent(schoolProfile.name)}&output=embed`}

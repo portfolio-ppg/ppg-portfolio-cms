@@ -3,13 +3,14 @@ import type { NavItem } from "./Header";
 
 interface FooterProps {
   name: string;
+  program: string;
   description: string;
   email: string;
   location: string;
   navItems: NavItem[];
 }
 
-export default function Footer({ name, description, email, location, navItems }: FooterProps) {
+export default function Footer({ name, program, description, email, location, navItems }: FooterProps) {
   return (
     <footer className="relative overflow-hidden border-t border-stone/30 bg-cream-deep">
       <div className="mx-auto max-w-6xl px-6 pt-12 pb-6 text-center md:px-10 md:pt-12 md:pb-6 md:text-left lg:px-10 lg:pt-24 lg:pb-12bu">
@@ -59,7 +60,9 @@ export default function Footer({ name, description, email, location, navItems }:
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-stone/25 pt-0 text-center text-xs text-ink-soft/80 md:flex-row md:items-center md:pt-8 md:text-left">
-          <p>&copy; {new Date().getFullYear()} {name}. Dibuat dengan bangga.</p>
+          <p>
+            &copy; {new Date().getFullYear()} E-Portofolio · {program} · {name}
+          </p>
         </div>
       </div>
     </footer>

@@ -15,6 +15,26 @@ function formatDate(iso: string): string {
 
 const ALL = "__all__";
 
+/**
+ * Orders tasks by category (matching the category tabs' order, with
+ * uncategorized tasks last), and within each category puts "Analisis ..."
+ * items first. Array.prototype.sort is stable, so tasks that are equal on
+ * both keys keep their original relative order.
+ */
+function sortTasks(tasks: TaskItem[], categories: TaskCategory[]): TaskItem[] {
+  const categoryOrder = new Map(categories.map((c, i) => [c.id, i]));
+  const rank = (t: TaskItem) => ({
+    category: categoryOrder.get(t.categoryId) ?? categories.length,
+    analysisFirst: t.title.trim().toLowerCase().startsWith("analisis") ? 0 : 1,
+  });
+
+  return [...tasks].sort((a, b) => {
+    const ra = rank(a);
+    const rb = rank(b);
+    return ra.category - rb.category || ra.analysisFirst - rb.analysisFirst;
+  });
+}
+
 export default function TugasContent({
   tasks,
   categories,
@@ -24,7 +44,7 @@ export default function TugasContent({
 }) {
   const [activeCategory, setActiveCategory] = useState(ALL);
 
-  const filtered = tasks.filter(
+  const filtered = sortTasks(tasks, categories).filter(
     (t) => activeCategory === ALL || t.categoryId === activeCategory
   );
 

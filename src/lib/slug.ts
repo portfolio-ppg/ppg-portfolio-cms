@@ -46,8 +46,8 @@ export function validateUsername(raw: string): UsernameValidation {
   if (value.length < 3) {
     return { ok: false, error: "Username minimal 3 karakter (huruf/angka/tanda hubung).", value };
   }
-  if (value.length > 32) {
-    return { ok: false, error: "Username maksimal 32 karakter.", value };
+  if (value.length > 100) {
+    return { ok: false, error: "Username maksimal 100 karakter.", value };
   }
   if (RESERVED_USERNAMES.includes(value)) {
     return { ok: false, error: `Username "${value}" tidak boleh dipakai (kata baku sistem).`, value };

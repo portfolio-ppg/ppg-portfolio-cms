@@ -68,6 +68,7 @@ export default async function UserPortfolioLayout({
       {children}
       <Footer
         name={profile.name}
+        program={profile.program}
         description={`${profile.role} ${profile.program}, ${profile.campus}. Berasal dari ${profile.originRegion}.`}
         email={profile.email}
         location={profile.campus}

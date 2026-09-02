@@ -38,6 +38,18 @@
   --color-sea: #052d5d;
   --color-ink: #1f2937;
   --color-ink-soft: #52606d;
+
+  /* Header.tsx's rendered height — kept as an explicit fixed height there
+     (not derived from padding) specifically so this stays a reliable
+     number other things (e.g. the sticky school-map offset in
+     HomeContent.tsx) can build on with calc() instead of guessing it. */
+  --header-h: 4rem;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-h: 5rem;
+  }
 }
 
 @theme inline {

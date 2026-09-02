@@ -16,6 +16,8 @@ function getFileExt(href: string): string {
   return ext.length > 0 && ext.length <= 5 ? ext.toUpperCase() : "FILE";
 }
 
+const VIDEO_EXTENSIONS = new Set(["MP4", "WEBM", "MOV", "MKV", "AVI", "M4V", "OGV"]);
+
 // Browsers ignore the `download` attribute on cross-origin links (e.g. Vercel
 // Blob URLs) and open the file instead — route those through our own API so
 // the response carries a same-origin Content-Disposition: attachment header.
@@ -24,6 +26,16 @@ function getDownloadHref(task: Task): string {
   const ext = task.href.split(".").pop()?.split(/[?#]/)[0] || "";
   const filename = `${task.title}${ext ? `.${ext}` : ""}`;
   return `/api/download?url=${encodeURIComponent(task.href)}&name=${encodeURIComponent(filename)}`;
+}
+
+// The browser's native "open a bare video file" page renders the video at
+// its natural pixel size on a black background instead of filling the
+// viewport, with no easy way to download it — route videos through our own
+// full-screen viewer instead. Other file types (PDF, images, docs) already
+// get a good native viewer, so they keep opening directly.
+function getOpenHref(task: Task): string {
+  if (!VIDEO_EXTENSIONS.has(getFileExt(task.href))) return task.href;
+  return `/view?url=${encodeURIComponent(task.href)}&name=${encodeURIComponent(task.title)}`;
 }
 
 export default function TaskCard({ task, index }: { task: Task; index: number }) {
@@ -68,7 +80,7 @@ export default function TaskCard({ task, index }: { task: Task; index: number })
             Unduh
           </a>
           <a
-            href={task.href}
+            href={getOpenHref(task)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 rounded-full border border-clay/50 px-4 py-2 text-[10px]! font-semibold text-clay-deep transition-colors duration-300 hover:bg-clay hover:text-white-warm"

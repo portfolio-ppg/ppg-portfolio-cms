@@ -30,13 +30,13 @@ export default function Header({ name, subtitle, navItems, homeHref }: HeaderPro
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-500 ${
+      className={`sticky top-0 z-50 h-16 md:h-20 transition-all duration-500 ${
         scrolled
           ? "bg-cream/85 backdrop-blur-md border-b border-stone/25 shadow-[0_1px_0_0_rgba(183,166,146,0.15)]"
           : "bg-transparent border-b border-transparent"
       }`}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3 md:px-10 md:py-4">
+      <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-6 md:px-10">
         <Link href={homeHref ?? navItems[0]?.href ?? "/"} className="group flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-full border border-clay/60 bg-white-warm text-clay-deep transition-transform duration-500 group-hover:rotate-[18deg]">
             <svg

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { Upload, X, Loader2, FolderOpen, FileText } from "lucide-react";
+import { uploadFile } from "@/lib/upload-client";
 import type { MediaItem } from "@/lib/types";
 
 function formatSize(bytes: number): string {
@@ -39,6 +40,7 @@ export default function ImagePicker({
   const url = controlled ? value! : internalUrl;
   const setUrl = controlled ? onChange! : setInternalUrl;
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [showLibrary, setShowLibrary] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -47,23 +49,15 @@ export default function ImagePicker({
 
   async function handleFile(file: File) {
     setUploading(true);
+    setProgress(0);
     setError(null);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("username", username);
-      const res = await fetch("/api/uploads", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Gagal mengunggah file.");
-      } else {
-        setUrl(data.item.url);
-      }
-    } catch {
-      setError("Gagal mengunggah file. Periksa koneksi Anda.");
-    } finally {
-      setUploading(false);
+    const result = await uploadFile(file, username, ({ percentage }) => setProgress(percentage));
+    if (!result.ok || !result.item) {
+      setError(result.error || "Gagal mengunggah file.");
+    } else {
+      setUrl(result.item.url);
     }
+    setUploading(false);
   }
 
   return (
@@ -91,26 +85,36 @@ export default function ImagePicker({
           </button>
         </div>
       ) : (
-        <div className="flex flex-col gap-2 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 px-4 py-4 sm:flex-row">
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            disabled={uploading}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
-          >
-            {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-            {uploading ? "Mengunggah..." : "Unggah dari komputer"}
-          </button>
-          <div className="hidden w-px self-stretch bg-gray-200 sm:block" />
-          <button
-            type="button"
-            onClick={() => setShowLibrary(true)}
-            disabled={uploading}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
-          >
-            <FolderOpen size={16} />
-            Pilih dari media library
-          </button>
+        <div>
+          <div className="flex flex-col gap-2 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 px-4 py-4 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            >
+              {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+              {uploading ? `Mengunggah... ${Math.round(progress)}%` : "Unggah dari komputer"}
+            </button>
+            <div className="hidden w-px self-stretch bg-gray-200 sm:block" />
+            <button
+              type="button"
+              onClick={() => setShowLibrary(true)}
+              disabled={uploading}
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            >
+              <FolderOpen size={16} />
+              Pilih dari media library
+            </button>
+          </div>
+          {uploading && (
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+              <div
+                className="h-full rounded-full bg-gray-900 transition-[width] duration-200"
+                style={{ width: `${Math.max(4, progress)}%` }}
+              />
+            </div>
+          )}
         </div>
       )}
 

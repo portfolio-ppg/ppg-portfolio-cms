@@ -2,8 +2,9 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { Upload, Trash2, FileText, Copy, Check, Loader2 } from "lucide-react";
+import { Upload, Trash2, FileText, Copy, Check } from "lucide-react";
 import { deleteMediaAction } from "@/lib/actions/media";
+import { uploadFile } from "@/lib/upload-client";
 import { buttonPrimaryClass, Card } from "@/components/admin/ui";
 import { useToast } from "@/components/admin/Toast";
 import type { MediaItem } from "@/lib/types";
@@ -18,6 +19,7 @@ interface PendingUpload {
   key: string;
   name: string;
   size: number;
+  progress: number;
 }
 
 export default function MediaLibrary({
@@ -44,26 +46,22 @@ export default function MediaLibrary({
       file,
       key: `pending-${Date.now()}-${i}-${file.name}`,
     }));
-    setPending((prev) => [...withKeys.map(({ key, file }) => ({ key, name: file.name, size: file.size })), ...prev]);
+    setPending((prev) => [
+      ...withKeys.map(({ key, file }) => ({ key, name: file.name, size: file.size, progress: 0 })),
+      ...prev,
+    ]);
 
     for (const { file, key } of withKeys) {
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("username", username);
-        const res = await fetch("/api/uploads", { method: "POST", body: formData });
-        const data = await res.json();
-        if (!res.ok) {
-          toast(data.error || `Gagal mengunggah ${file.name}.`, "error");
-        } else {
-          setItems((prev) => [data.item, ...prev]);
-          toast(`"${file.name}" berhasil diunggah.`);
-        }
-      } catch {
-        toast(`Gagal mengunggah ${file.name}.`, "error");
-      } finally {
-        setPending((prev) => prev.filter((p) => p.key !== key));
+      const result = await uploadFile(file, username, ({ percentage }) => {
+        setPending((prev) => prev.map((p) => (p.key === key ? { ...p, progress: percentage } : p)));
+      });
+      if (!result.ok || !result.item) {
+        toast(result.error || `Gagal mengunggah ${file.name}.`, "error");
+      } else {
+        setItems((prev) => [result.item!, ...prev]);
+        toast(`"${file.name}" berhasil diunggah.`);
       }
+      setPending((prev) => prev.filter((p) => p.key !== key));
     }
   }
 
@@ -124,14 +122,20 @@ export default function MediaLibrary({
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
         {pending.map((p) => (
-          <Card key={p.key} className="!p-3 opacity-60">
+          <Card key={p.key} className="!p-3 opacity-80">
             <div className="relative mb-2 flex h-28 items-center justify-center overflow-hidden rounded-lg bg-gray-100">
-              <Loader2 size={22} className="animate-spin text-gray-400" />
+              <span className="text-sm font-semibold text-gray-500">{Math.round(p.progress)}%</span>
             </div>
             <p className="truncate text-xs font-medium text-gray-900" title={p.name}>
               {p.name}
             </p>
             <p className="text-[10px] text-gray-400">{formatSize(p.size)} · mengunggah…</p>
+            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+              <div
+                className="h-full rounded-full bg-gray-900 transition-[width] duration-200"
+                style={{ width: `${Math.max(4, p.progress)}%` }}
+              />
+            </div>
           </Card>
         ))}
         {items.map((item) => (

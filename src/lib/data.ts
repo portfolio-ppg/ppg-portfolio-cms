@@ -1,6 +1,6 @@
 import { readJson, writeJson, deleteJsonFile, listPortfolioUsernames, newId, renameUploadsFolder } from "./store";
 import { hashPassword } from "./auth";
-import type { User, Portfolio, Profile, Appearance, TaskCategory } from "./types";
+import type { User, Portfolio, Profile, SchoolProfile, Appearance, TaskCategory } from "./types";
 import { TEMPLATE_DEFAULTS } from "./templates";
 
 // ---------------------------------------------------------------------------
@@ -109,6 +109,9 @@ function rewritePortfolioUsername(portfolio: Portfolio, oldUsername: string, new
     ...portfolio,
     username: newUsername,
     profile: { ...portfolio.profile, avatarUrl: swap(portfolio.profile.avatarUrl) },
+    schoolProfile: portfolio.schoolProfile
+      ? { ...portfolio.schoolProfile, logoUrl: swap(portfolio.schoolProfile.logoUrl) }
+      : defaultSchoolProfile(),
     hometown: portfolio.hometown.map((h) => ({ ...h, image: swap(h.image) })),
     tasks: portfolio.tasks.map((t) => ({ ...t, fileUrl: swap(t.fileUrl) })),
     appearance: { ...portfolio.appearance, backgroundImageUrl: swap(portfolio.appearance.backgroundImageUrl) },
@@ -165,6 +168,18 @@ function defaultProfile(displayName: string): Profile {
   };
 }
 
+// Empty on purpose (unlike defaultProfile): the public "Profil Sekolah"
+// section only renders once name/description/logo is non-empty, so existing
+// portfolios that predate this feature (or haven't set it up yet) stay
+// exactly as they were instead of showing placeholder text.
+function defaultSchoolProfile(): SchoolProfile {
+  return {
+    name: "",
+    description: "",
+    logoUrl: "",
+  };
+}
+
 function defaultTaskCategories(): TaskCategory[] {
   return [
     { id: newId(), name: "Refleksi Pengalaman Belajar Semester 1" },
@@ -180,6 +195,10 @@ function defaultAppearance(): Appearance {
     templateId: "nature",
     layoutId: "classic",
     fontId: "fraunces-jakarta",
+    avatarShadow: "soft",
+    avatarAnimation: "float",
+    marqueeTop: [],
+    marqueeBottom: [],
     paletteType: "solid",
     solidColor: d.solidColor,
     gradientFrom: d.gradientFrom,
@@ -200,6 +219,7 @@ function defaultPortfolio(username: string, displayName: string): Portfolio {
   return {
     username,
     profile: defaultProfile(displayName),
+    schoolProfile: defaultSchoolProfile(),
     hometown: [],
     tasks: [],
     taskCategories: defaultTaskCategories(),
@@ -216,11 +236,29 @@ export async function createPortfolioForUser(username: string, displayName: stri
   return portfolio;
 }
 
+/**
+ * Backfills fields added to Portfolio/Appearance/etc. after a portfolio was
+ * first saved — readJson has no schema migration, so an older JSON file on
+ * disk simply won't have keys like `schoolProfile` or `appearance.marqueeTop`
+ * at all, which would otherwise crash the first time something reads them.
+ */
+function normalizePortfolio(stored: Portfolio, username: string, displayName: string): Portfolio {
+  const defaults = defaultPortfolio(username, displayName);
+  return {
+    ...defaults,
+    ...stored,
+    profile: { ...defaults.profile, ...stored.profile },
+    appearance: { ...defaults.appearance, ...stored.appearance },
+    schoolProfile: { ...defaults.schoolProfile, ...stored.schoolProfile },
+  };
+}
+
 export async function getPortfolio(username: string): Promise<Portfolio | null> {
   const key = username.toLowerCase();
   const user = await getUserByUsername(key);
   if (!user) return null;
-  return readJson<Portfolio>(`portfolios/${key}.json`, defaultPortfolio(key, user.displayName));
+  const stored = await readJson<Portfolio>(`portfolios/${key}.json`, defaultPortfolio(key, user.displayName));
+  return normalizePortfolio(stored, key, user.displayName);
 }
 
 export async function savePortfolio(portfolio: Portfolio): Promise<void> {

@@ -11,5 +11,13 @@ export default async function UserProfilePage({
   const portfolio = await getPortfolio(username);
   if (!portfolio) notFound();
 
-  return <HomeContent username={username} profile={portfolio.profile} hometown={portfolio.hometown} />;
+  return (
+    <HomeContent
+      username={username}
+      profile={portfolio.profile}
+      schoolProfile={portfolio.schoolProfile}
+      hometown={portfolio.hometown}
+      appearance={portfolio.appearance}
+    />
+  );
 }

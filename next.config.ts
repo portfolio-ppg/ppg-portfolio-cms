@@ -7,6 +7,13 @@ import type { NextConfig } from "next";
 // (static hosting) can no longer be used for this project. See
 // README-CMS.md for details.
 const nextConfig: NextConfig = {
+  // Exposes whether Vercel Blob is configured to client bundles at build
+  // time, so upload components know to upload straight to Blob storage
+  // (bypassing the serverless function body-size limit) instead of proxying
+  // the file through /api/uploads. See src/lib/upload-client.ts.
+  env: {
+    NEXT_PUBLIC_BLOB_UPLOAD: process.env.BLOB_READ_WRITE_TOKEN ? "1" : "",
+  },
   images: {
     remotePatterns: [
       {

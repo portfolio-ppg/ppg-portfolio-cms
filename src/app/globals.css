@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Admin/backend palette (login, /admin, dashboards) — derived from the
-   e-portfolio-logo mark (navy + gold). Remapping Tailwind's neutral "gray"
+   e-portfolio-logo mark (navy blue). Remapping Tailwind's neutral "gray"
    scale here re-colors every existing gray-tinted utility class (bg, text,
    border, ring) already used across the admin UI, without having to touch
    each component. Deliberately NOT touched: the public portfolio pages
@@ -18,12 +18,6 @@
   --color-gray-700: color-mix(in srgb, #052d5d 91%, white);
   --color-gray-800: color-mix(in srgb, #052d5d 97%, white);
   --color-gray-900: #052d5d;
-  --color-gold-50: color-mix(in srgb, #cd8d1f 6%, white);
-  --color-gold-100: color-mix(in srgb, #cd8d1f 15%, white);
-  --color-gold-200: color-mix(in srgb, #cd8d1f 30%, white);
-  --color-gold-400: color-mix(in srgb, #cd8d1f 70%, white);
-  --color-gold-500: #cd8d1f;
-  --color-gold-600: color-mix(in srgb, #cd8d1f 85%, black);
 }
 
 :root {
@@ -67,6 +61,9 @@
   --animate-marquee-reverse: marquee-reverse 38s linear infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-float-slow: float 9s ease-in-out infinite;
+  --animate-avatar-pulse: avatar-pulse 4s ease-in-out infinite;
+  --animate-avatar-bounce-in: avatar-bounce-in 0.9s cubic-bezier(0.22, 1.4, 0.36, 1) both;
+  --animate-avatar-wiggle: avatar-wiggle 5s ease-in-out infinite;
 
   @keyframes marquee {
     from { transform: translateX(0); }
@@ -79,6 +76,22 @@
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-10px); }
+  }
+  @keyframes avatar-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.045); }
+  }
+  @keyframes avatar-bounce-in {
+    0% { transform: scale(0.6); opacity: 0; }
+    60% { transform: scale(1.06); opacity: 1; }
+    80% { transform: scale(0.97); }
+    100% { transform: scale(1); }
+  }
+  @keyframes avatar-wiggle {
+    0%, 92%, 100% { transform: rotate(0deg); }
+    94% { transform: rotate(-2.5deg); }
+    96% { transform: rotate(2.5deg); }
+    98% { transform: rotate(-1.5deg); }
   }
 }
 
@@ -154,6 +167,7 @@ h1, h2, h3, h4, .font-display {
 [data-layout="editorial"] .decor-blob { display: none; }
 [data-layout="editorial"] .about-section,
 [data-layout="editorial"] .visi-misi-section,
+[data-layout="editorial"] .school-section,
 [data-layout="editorial"] .kampung-halaman-section {
   border-top: 1px solid var(--color-stone);
 }
@@ -165,6 +179,7 @@ h1, h2, h3, h4, .font-display {
 /* Kartu Lembut — sections float as soft white cards with a shadow. */
 [data-layout="soft-card"] .about-section > div,
 [data-layout="soft-card"] .visi-misi-section > div,
+[data-layout="soft-card"] .school-section > div,
 [data-layout="soft-card"] .kampung-halaman-section > div {
   background: var(--color-white-warm);
   border-radius: 1.75rem;
@@ -178,6 +193,7 @@ h1, h2, h3, h4, .font-display {
 [data-layout="bold-lines"] .border { border-width: 2px; }
 [data-layout="bold-lines"] .about-section,
 [data-layout="bold-lines"] .visi-misi-section,
+[data-layout="bold-lines"] .school-section,
 [data-layout="bold-lines"] .kampung-halaman-section {
   border-top: 2px solid var(--color-ink);
 }
@@ -200,6 +216,7 @@ h1, h2, h3, h4, .font-display {
 [data-layout="compact"] .header-section,
 [data-layout="compact"] .about-section,
 [data-layout="compact"] .visi-misi-section,
+[data-layout="compact"] .school-section,
 [data-layout="compact"] .kampung-halaman-section {
   padding-top: 2rem;
   padding-bottom: 2rem;

@@ -11,6 +11,11 @@ export type Task = {
   href: string;
 };
 
+function getFileExt(href: string): string {
+  const ext = href.split(/[?#]/)[0].split(".").pop() || "";
+  return ext.length > 0 && ext.length <= 5 ? ext.toUpperCase() : "FILE";
+}
+
 // Browsers ignore the `download` attribute on cross-origin links (e.g. Vercel
 // Blob URLs) and open the file instead — route those through our own API so
 // the response carries a same-origin Content-Disposition: attachment header.
@@ -47,7 +52,7 @@ export default function TaskCard({ task, index }: { task: Task; index: number })
               {task.date}
             </span>
             <span>&middot;</span>
-            <span>PDF &middot; {task.size}</span>
+            <span>{task.href ? getFileExt(task.href) : "FILE"} &middot; {task.size}</span>
           </div>
         </div>
       </div>

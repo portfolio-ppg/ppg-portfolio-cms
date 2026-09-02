@@ -20,7 +20,7 @@ export const inputClass =
   "w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-100";
 
 export const buttonPrimaryClass =
-  "inline-flex items-center justify-center gap-2 rounded-lg bg-gold-500 px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gold-600 active:bg-gold-600 disabled:opacity-50 disabled:hover:bg-gold-500";
+  "inline-flex items-center justify-center gap-2 rounded-lg border border-gray-900 bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-transparent hover:text-gray-900 disabled:opacity-50 disabled:hover:bg-gray-900 disabled:hover:text-white";
 
 export const buttonSecondaryClass =
   "inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50";
@@ -54,7 +54,7 @@ export function Badge({
 }) {
   const toneClass =
     tone === "dark"
-      ? "bg-gold-500 text-gray-900"
+      ? "bg-gray-900 text-white"
       : tone === "danger"
         ? "bg-red-50 text-red-600"
         : "bg-gray-100 text-gray-600";

@@ -5,7 +5,23 @@ import { requireSessionUser, canManagePortfolio } from "@/lib/auth";
 import { getPortfolio, savePortfolio } from "@/lib/data";
 import { getLayout } from "@/lib/layouts";
 import { getFontPair } from "@/lib/fonts";
-import type { Appearance, PaletteType, TemplateId, LayoutId, FontPairId } from "@/lib/types";
+import { getAvatarShadow, getAvatarAnimation } from "@/lib/avatar-effects";
+import type {
+  Appearance,
+  PaletteType,
+  TemplateId,
+  LayoutId,
+  FontPairId,
+  AvatarShadowId,
+  AvatarAnimationId,
+} from "@/lib/types";
+
+function parseMarquee(raw: FormDataEntryValue | null): string[] {
+  return String(raw || "")
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 export async function updateAppearanceAction(
   _prevState: { ok?: boolean; error?: string } | undefined,
@@ -22,6 +38,10 @@ export async function updateAppearanceAction(
     templateId: String(formData.get("templateId") || "nature") as TemplateId,
     layoutId: getLayout(String(formData.get("layoutId") || "") as LayoutId).id,
     fontId: getFontPair(String(formData.get("fontId") || "") as FontPairId).id,
+    avatarShadow: getAvatarShadow(String(formData.get("avatarShadow") || "") as AvatarShadowId).id,
+    avatarAnimation: getAvatarAnimation(String(formData.get("avatarAnimation") || "") as AvatarAnimationId).id,
+    marqueeTop: parseMarquee(formData.get("marqueeTop")),
+    marqueeBottom: parseMarquee(formData.get("marqueeBottom")),
     paletteType: String(formData.get("paletteType") || "solid") as PaletteType,
     solidColor: String(formData.get("solidColor") || "#eda4a3"),
     gradientFrom: String(formData.get("gradientFrom") || "#eda4a3"),

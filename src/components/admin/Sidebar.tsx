@@ -6,6 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
   User,
+  School,
   MapPin,
   FolderOpen,
   Image as ImageIcon,
@@ -19,6 +20,7 @@ import { logoutAction } from "@/lib/actions/auth";
 
 const CONTENT_NAV = [
   { href: "/admin/profile", label: "Profil", icon: User },
+  { href: "/admin/school", label: "Profil Sekolah", icon: School },
   { href: "/admin/hometown", label: "Tempat Asal", icon: MapPin },
   { href: "/admin/tasks", label: "Tugas", icon: FolderOpen },
   { href: "/admin/media", label: "Media Library", icon: ImageIcon },

@@ -2,12 +2,13 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { updateAppearanceAction } from "@/lib/actions/appearance";
-import { Field, buttonPrimaryClass, Card } from "@/components/admin/ui";
+import { Field, inputClass, buttonPrimaryClass, Card } from "@/components/admin/ui";
 import ImagePicker from "@/components/admin/ImagePicker";
 import { useToast } from "@/components/admin/Toast";
 import { TEMPLATES, TEMPLATE_DEFAULTS } from "@/lib/templates";
 import { LAYOUTS } from "@/lib/layouts";
 import { FONT_PAIRS } from "@/lib/fonts";
+import { AVATAR_SHADOWS, AVATAR_ANIMATIONS } from "@/lib/avatar-effects";
 import type { Appearance, PaletteType, TemplateId, LayoutId } from "@/lib/types";
 
 /** Small illustrative mock of each layout's hero arrangement — purely decorative. */
@@ -92,6 +93,10 @@ export default function AppearanceForm({
       <input type="hidden" name="templateId" value={values.templateId} />
       <input type="hidden" name="layoutId" value={values.layoutId} />
       <input type="hidden" name="fontId" value={values.fontId} />
+      <input type="hidden" name="avatarShadow" value={values.avatarShadow} />
+      <input type="hidden" name="avatarAnimation" value={values.avatarAnimation} />
+      <input type="hidden" name="marqueeTop" value={values.marqueeTop.join("\n")} />
+      <input type="hidden" name="marqueeBottom" value={values.marqueeBottom.join("\n")} />
       <input type="hidden" name="paletteType" value={values.paletteType} />
       <input type="hidden" name="solidColor" value={values.solidColor} />
       <input type="hidden" name="gradientFrom" value={values.gradientFrom} />
@@ -178,6 +183,58 @@ export default function AppearanceForm({
               </div>
               <p className="mt-3 text-sm font-semibold text-gray-900">{f.name}</p>
               <p className="mt-1 text-xs text-gray-500">{f.description}</p>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card>
+        <p className="mb-4 text-sm font-semibold text-gray-900">
+          Bayangan Foto Profil <span className="font-normal text-gray-400">({AVATAR_SHADOWS.length} pilihan)</span>
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {AVATAR_SHADOWS.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => set("avatarShadow", s.id)}
+              className={`rounded-2xl border p-4 text-left transition-all ${
+                values.avatarShadow === s.id
+                  ? "border-gray-900 ring-2 ring-gray-200"
+                  : "border-gray-200 hover:border-gray-400"
+              }`}
+            >
+              <div className="flex h-16 w-full items-center justify-center rounded-xl bg-gray-50">
+                <div className={`h-9 w-9 rounded-full bg-gray-300 ${s.className}`} />
+              </div>
+              <p className="mt-3 text-sm font-semibold text-gray-900">{s.name}</p>
+              <p className="mt-1 text-xs text-gray-500">{s.description}</p>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card>
+        <p className="mb-4 text-sm font-semibold text-gray-900">
+          Animasi Foto Profil <span className="font-normal text-gray-400">({AVATAR_ANIMATIONS.length} pilihan)</span>
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {AVATAR_ANIMATIONS.map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => set("avatarAnimation", a.id)}
+              className={`rounded-2xl border p-4 text-left transition-all ${
+                values.avatarAnimation === a.id
+                  ? "border-gray-900 ring-2 ring-gray-200"
+                  : "border-gray-200 hover:border-gray-400"
+              }`}
+            >
+              <div className="flex h-16 w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50">
+                <div className={`h-9 w-9 rounded-full bg-gray-300 ${a.className}`} />
+              </div>
+              <p className="mt-3 text-sm font-semibold text-gray-900">{a.name}</p>
+              <p className="mt-1 text-xs text-gray-500">{a.description}</p>
             </button>
           ))}
         </div>
@@ -322,6 +379,33 @@ export default function AppearanceForm({
               value={values.surfaceColor}
               onChange={(e) => set("surfaceColor", e.target.value)}
               className="h-11 w-full cursor-pointer rounded-lg border border-gray-200"
+            />
+          </Field>
+        </div>
+      </Card>
+
+      <Card>
+        <p className="mb-1 text-sm font-semibold text-gray-900">Teks Marquee</p>
+        <p className="mb-4 text-xs text-gray-500">
+          Satu baris = satu teks berjalan. Kosongkan untuk memakai teks otomatis dari data tempat asal.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Marquee Atas (di bawah hero)">
+            <textarea
+              rows={4}
+              value={values.marqueeTop.join("\n")}
+              onChange={(e) => set("marqueeTop", e.target.value.split("\n"))}
+              placeholder={"Contoh:\nSumbawa Barat, NTB"}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="Marquee Bawah (penutup halaman)">
+            <textarea
+              rows={4}
+              value={values.marqueeBottom.join("\n")}
+              onChange={(e) => set("marqueeBottom", e.target.value.split("\n"))}
+              placeholder={"Contoh:\nTerima Kasih"}
+              className={inputClass}
             />
           </Field>
         </div>

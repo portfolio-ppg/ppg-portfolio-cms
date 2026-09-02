@@ -1,21 +1,27 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Marquee from "@/components/Marquee";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import NatureCard from "@/components/NatureCard";
-import type { Profile, HometownItem } from "@/lib/types";
+import { getAvatarShadow, getAvatarAnimation } from "@/lib/avatar-effects";
+import type { Profile, SchoolProfile, HometownItem, Appearance } from "@/lib/types";
 
 export default function HomeContent({
   username,
   profile,
+  schoolProfile,
   hometown,
+  appearance,
 }: {
   username: string;
   profile: Profile;
+  schoolProfile: SchoolProfile;
   hometown: HometownItem[];
+  appearance: Appearance;
 }) {
   const facts = [
     { label: "Program", value: profile.program },
@@ -26,9 +32,16 @@ export default function HomeContent({
   const [firstName, ...restName] = profile.name.split(" ");
   const restNameStr = restName.join(" ");
 
-  const marqueeItems = hometown.length
+  const autoMarqueeItems = hometown.length
     ? hometown.map((h) => h.label)
     : [profile.originRegion];
+  const marqueeTopItems = appearance.marqueeTop.length ? appearance.marqueeTop : autoMarqueeItems;
+  const marqueeBottomItems = appearance.marqueeBottom.length
+    ? appearance.marqueeBottom
+    : ["Terima Kasih", ...autoMarqueeItems];
+
+  const avatarShadowClass = getAvatarShadow(appearance.avatarShadow).className;
+  const avatarAnimationClass = getAvatarAnimation(appearance.avatarAnimation).className;
 
   return (
     <main>
@@ -107,16 +120,17 @@ export default function HomeContent({
             className="relative mx-auto w-full max-w-sm"
           >
             <div className="animate-float-slow absolute -inset-4 -z-10 rounded-[46%_54%_58%_42%/48%_42%_58%_52%] bg-sage/15 blur-2xl" />
-            <div className="animate-float aspect-[5/6] w-full">
+            <div className={`aspect-[5/6] w-full ${avatarAnimationClass}`}>
               <ProfileAvatar
                 src={profile.avatarUrl || undefined}
                 alt={`Foto profil ${profile.name}`}
+                shadowClassName={avatarShadowClass}
               />
             </div>
           </motion.div>
         </div>
 
-        <Marquee items={marqueeItems} />
+        <Marquee items={marqueeTopItems} />
       </section>
 
       {/* ===== TENTANG SAYA ===== */}
@@ -153,6 +167,48 @@ export default function HomeContent({
         </div>
       </section>
 
+      {/* ===== PROFIL SEKOLAH ===== */}
+      {(schoolProfile.name || schoolProfile.description || schoolProfile.logoUrl) && (
+        <section className="school-section py-12 text-center md:py-12 md:text-left lg:py-24">
+          <div className="mx-auto max-w-6xl px-6 md:px-10 lg:px-10">
+            <div className="grid gap-8 md:grid-cols-2 md:items-center md:gap-12">
+              <div>
+                <p className="text-[10px]! font-semibold uppercase tracking-[0.18em] text-clay-deep sm:text-[12px]">
+                  Profil Sekolah
+                </p>
+                <div className="mt-3 flex flex-col items-center gap-4 sm:flex-row md:items-center">
+                  {schoolProfile.logoUrl && (
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-stone/40 bg-white-warm">
+                      <Image
+                        src={schoolProfile.logoUrl}
+                        alt={`Logo ${schoolProfile.name}`}
+                        fill
+                        sizes="64px"
+                        className="object-contain p-2"
+                      />
+                    </div>
+                  )}
+                  <h2 className="font-display text-[24px] text-ink md:text-[36px]">{schoolProfile.name}</h2>
+                </div>
+                <p className="mt-5 text-[15px] leading-relaxed text-ink-soft">{schoolProfile.description}</p>
+              </div>
+
+              {schoolProfile.name && (
+                <div className="h-72 w-full overflow-hidden rounded-2xl border border-stone/40 md:h-80">
+                  <iframe
+                    title={`Peta lokasi ${schoolProfile.name}`}
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(schoolProfile.name)}&output=embed`}
+                    className="h-full w-full border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ===== KAMPUNG HALAMAN ===== */}
       {hometown.length > 0 && (
         <section id="kampung-halaman" className="kampung-halaman-section bg-white-warm py-12 text-center min-[768px]:text-left lg:py-24">
@@ -184,7 +240,7 @@ export default function HomeContent({
       )}
 
       {/* ===== PENUTUP ===== */}
-      <Marquee reverse items={["Terima Kasih", ...marqueeItems]} />
+      <Marquee reverse items={marqueeBottomItems} />
     </main>
   );
 }

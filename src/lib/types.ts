@@ -23,6 +23,12 @@ export interface Profile {
   avatarUrl: string;
 }
 
+export interface SchoolProfile {
+  name: string;
+  description: string;
+  logoUrl: string;
+}
+
 export interface HometownItem {
   id: string;
   label: string;
@@ -80,10 +86,22 @@ export type FontPairId =
   | "poppins-work"
   | "cormorant-karla";
 
+/** Box-shadow style applied to the profile photo on the public page. */
+export type AvatarShadowId = "soft" | "none" | "glow" | "sharp" | "ring";
+
+/** Animation applied to the profile photo on the public page. */
+export type AvatarAnimationId = "float" | "none" | "pulse" | "bounce-in" | "wiggle";
+
 export interface Appearance {
   templateId: TemplateId;
   layoutId: LayoutId;
   fontId: FontPairId;
+  avatarShadow: AvatarShadowId;
+  avatarAnimation: AvatarAnimationId;
+  /** Manual marquee text (one item per entry). Empty = auto-derive from hometown/originRegion. */
+  marqueeTop: string[];
+  /** Manual marquee text for the closing/reverse-scrolling marquee. Empty = auto-derive. */
+  marqueeBottom: string[];
   paletteType: PaletteType;
   solidColor: string;
   gradientFrom: string;
@@ -115,6 +133,7 @@ export interface MediaItem {
 export interface Portfolio {
   username: string;
   profile: Profile;
+  schoolProfile: SchoolProfile;
   hometown: HometownItem[];
   tasks: TaskItem[];
   taskCategories: TaskCategory[];

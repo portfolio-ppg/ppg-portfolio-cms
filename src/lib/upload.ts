@@ -4,24 +4,17 @@ import crypto from "crypto";
 import { put, del } from "@vercel/blob";
 import type { MediaItem } from "./types";
 import { getPortfolio, savePortfolio } from "./data";
+import { classifyKind } from "./upload-shared";
 
 const blobToken = () => process.env.BLOB_READ_WRITE_TOKEN;
 
 // Practical ceiling for a single upload. Configure via MAX_UPLOAD_MB in .env.
-// NOTE: browsers/Node buffer the whole file for a normal form upload, so
-// multi-GB files are not realistic on typical hosting (serverless platforms
-// like Vercel cap request bodies around ~4.5MB). Default here is generous
-// but sane for a self-hosted Node server; raise it in .env if you truly
-// need bigger files and are hosting on a server you control.
-export const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 200);
-
-const IMAGE_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "image/svg+xml",
-]);
+// When BLOB_READ_WRITE_TOKEN is set, uploads go straight from the browser to
+// Vercel Blob (see /api/uploads/token + src/lib/upload-client.ts), so this
+// limit isn't constrained by a serverless function's request-body cap.
+// Without it (self-hosted / local dev), files are written straight to disk
+// via /api/uploads, which has no such cap either — 256MB is safe either way.
+export const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB || 256);
 
 export interface UploadResult {
   ok: boolean;
@@ -48,7 +41,7 @@ export async function saveUploadedFile(file: File, username: string): Promise<Up
     return { ok: false, error: "Pengguna tidak ditemukan." };
   }
 
-  const kind: MediaItem["kind"] = IMAGE_TYPES.has(file.type) ? "image" : "document";
+  const kind: MediaItem["kind"] = classifyKind(file.type);
   const subdir = kind === "image" ? "images" : "documents";
 
   const ext = path.extname(file.name) || "";
@@ -86,6 +79,43 @@ export async function saveUploadedFile(file: File, username: string): Promise<Up
     kind,
     mimeType: file.type || "application/octet-stream",
     size: file.size,
+    uploadedAt: new Date().toISOString(),
+  };
+
+  portfolio.media.unshift(item);
+  await savePortfolio(portfolio);
+
+  return { ok: true, item };
+}
+
+/**
+ * Records a MediaItem for a file that was already uploaded directly from the
+ * browser straight to Blob storage (see /api/uploads/token +
+ * src/lib/upload-client.ts) — this only persists the metadata, it never
+ * touches the file itself.
+ */
+export async function registerUploadedMedia(
+  username: string,
+  input: { url: string; originalName: string; mimeType: string; size: number }
+): Promise<UploadResult> {
+  const maxBytes = MAX_UPLOAD_MB * 1024 * 1024;
+  if (input.size > maxBytes) {
+    return { ok: false, error: `File terlalu besar. Maksimal ${MAX_UPLOAD_MB} MB.` };
+  }
+
+  const portfolio = await getPortfolio(username);
+  if (!portfolio) {
+    return { ok: false, error: "Pengguna tidak ditemukan." };
+  }
+
+  const item: MediaItem = {
+    id: crypto.randomUUID(),
+    filename: input.url.split("/").pop() || input.originalName,
+    originalName: input.originalName,
+    url: input.url,
+    kind: classifyKind(input.mimeType),
+    mimeType: input.mimeType,
+    size: input.size,
     uploadedAt: new Date().toISOString(),
   };
 

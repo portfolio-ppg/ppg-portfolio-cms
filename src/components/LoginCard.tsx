@@ -69,7 +69,7 @@ function LoginCardInner() {
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-lg bg-gold-500 px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gold-600 disabled:opacity-50"
+          className="w-full rounded-lg border border-gray-900 bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-transparent hover:text-gray-900 disabled:opacity-50 disabled:hover:bg-gray-900 disabled:hover:text-white"
         >
           {pending ? "Memproses..." : "Masuk"}
         </button>

@@ -51,6 +51,34 @@ export async function createTaskAction(username: string, formData: FormData) {
   revalidatePath(`/${username}/tugas`);
 }
 
+export async function updateTaskAction(username: string, id: string, formData: FormData) {
+  const portfolio = await loadAuthorizedPortfolio(username);
+  const idx = portfolio.tasks.findIndex((t) => t.id === id);
+  if (idx === -1) throw new Error("Tugas tidak ditemukan.");
+
+  const title = String(formData.get("title") || "").trim();
+  const course = String(formData.get("course") || "").trim();
+  const date = String(formData.get("date") || "").trim();
+  const categoryId = String(formData.get("categoryId") || "").trim();
+  const fileUrl = String(formData.get("fileUrl") || "").trim();
+  const fileSize = Number(formData.get("fileSize") || 0);
+
+  if (!title) throw new Error("Judul tugas wajib diisi.");
+  if (!fileUrl) throw new Error("Silakan pilih file dari Media Library terlebih dahulu.");
+
+  const existing = portfolio.tasks[idx];
+  // Only trust the submitted byte size when a new file was actually picked
+  // (fileUrl changed) — TaskItem only stores the pre-formatted size string,
+  // so re-editing without touching the file field must keep it as-is rather
+  // than overwrite it with FilePicker's cosmetic prefill value.
+  const fileChanged = fileUrl !== existing.fileUrl;
+  const size = fileChanged && fileSize ? formatSize(fileSize) : existing.size;
+
+  portfolio.tasks[idx] = { ...existing, title, course, date, categoryId, fileUrl, size };
+  await savePortfolio(portfolio);
+  revalidatePath(`/${username}/tugas`);
+}
+
 export async function deleteTaskAction(username: string, id: string) {
   const portfolio = await loadAuthorizedPortfolio(username);
   portfolio.tasks = portfolio.tasks.filter((i) => i.id !== id);

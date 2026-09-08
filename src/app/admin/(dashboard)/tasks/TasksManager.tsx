@@ -2,7 +2,7 @@
 
 import { useOptimistic, useRef, useState, useTransition } from "react";
 import { Plus, Trash2, X, Pencil, FileText, CalendarDays, Tag } from "lucide-react";
-import { createTaskAction, deleteTaskAction } from "@/lib/actions/tasks";
+import { createTaskAction, updateTaskAction, deleteTaskAction } from "@/lib/actions/tasks";
 import {
   createTaskCategoryAction,
   updateTaskCategoryAction,
@@ -19,7 +19,24 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-type TaskAction = { type: "add"; task: TaskItem } | { type: "delete"; id: string };
+// Reverses formatSize for FilePicker's prefill display only — TaskItem
+// stores just the formatted string, not raw bytes, so this is an
+// approximation used purely so the edit form shows something close to the
+// original size next to the existing file instead of "0 B".
+function parseSizeToBytes(display: string): number {
+  const match = /^([\d.]+)\s*(B|KB|MB)$/i.exec(display.trim());
+  if (!match) return 0;
+  const value = parseFloat(match[1]);
+  const unit = match[2].toUpperCase();
+  if (unit === "KB") return Math.round(value * 1024);
+  if (unit === "MB") return Math.round(value * 1024 * 1024);
+  return Math.round(value);
+}
+
+type TaskAction =
+  | { type: "add"; task: TaskItem }
+  | { type: "update"; task: TaskItem }
+  | { type: "delete"; id: string };
 type CategoryAction =
   | { type: "add"; category: TaskCategory }
   | { type: "update"; id: string; name: string }
@@ -39,10 +56,11 @@ export default function TasksManager({
   const toast = useToast();
   const [, startTransition] = useTransition();
   const tempId = useRef(0);
-  const [adding, setAdding] = useState(false);
+  const [editingTask, setEditingTask] = useState<TaskItem | "new" | null>(null);
 
   const [optimisticTasks, applyTask] = useOptimistic<TaskItem[], TaskAction>(tasks, (state, action) => {
     if (action.type === "add") return [action.task, ...state];
+    if (action.type === "update") return state.map((t) => (t.id === action.task.id ? action.task : t));
     if (action.type === "delete") return state.filter((t) => t.id !== action.id);
     return state;
   });
@@ -79,13 +97,44 @@ export default function TasksManager({
         size: fileSize ? formatSize(fileSize) : "-",
       },
     });
-    setAdding(false);
+    setEditingTask(null);
     toast(`Tugas "${title}" berhasil ditambahkan.`);
 
     try {
       await createTaskAction(username, formData);
     } catch (e) {
       toast(e instanceof Error ? e.message : "Gagal menambahkan tugas.", "error");
+    }
+  }
+
+  async function handleUpdateTask(id: string, formData: FormData) {
+    const title = String(formData.get("title") || "").trim();
+    const course = String(formData.get("course") || "").trim();
+    const date = String(formData.get("date") || "").trim();
+    const categoryId = String(formData.get("categoryId") || "").trim();
+    const fileUrl = String(formData.get("fileUrl") || "").trim();
+    const fileSize = Number(formData.get("fileSize") || 0);
+    const existing = optimisticTasks.find((t) => t.id === id);
+
+    applyTask({
+      type: "update",
+      task: {
+        id,
+        title,
+        course,
+        date,
+        categoryId,
+        fileUrl,
+        size: fileUrl !== existing?.fileUrl && fileSize ? formatSize(fileSize) : existing?.size || "-",
+      },
+    });
+    setEditingTask(null);
+    toast(`Tugas "${title}" berhasil diperbarui.`);
+
+    try {
+      await updateTaskAction(username, id, formData);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Gagal memperbarui tugas.", "error");
     }
   }
 
@@ -145,16 +194,20 @@ export default function TasksManager({
       />
 
       <div className="space-y-6">
-        {adding ? (
-          <AddForm
+        {editingTask ? (
+          <TaskForm
+            key={editingTask === "new" ? "new" : editingTask.id}
+            task={editingTask === "new" ? null : editingTask}
             categories={optimisticCategories}
             media={media}
             username={username}
-            onSubmit={handleCreateTask}
-            onClose={() => setAdding(false)}
+            onSubmit={
+              editingTask === "new" ? handleCreateTask : (fd) => handleUpdateTask((editingTask as TaskItem).id, fd)
+            }
+            onClose={() => setEditingTask(null)}
           />
         ) : (
-          <button onClick={() => setAdding(true)} className={buttonPrimaryClass}>
+          <button onClick={() => setEditingTask("new")} className={buttonPrimaryClass}>
             <Plus size={16} /> Tambah Tugas
           </button>
         )}
@@ -183,12 +236,20 @@ export default function TasksManager({
                   </div>
                 </div>
               </div>
-              <button
-                onClick={() => handleDeleteTask(task.id, task.title)}
-                className="flex shrink-0 items-center gap-1 text-xs font-medium text-red-600 hover:underline"
-              >
-                <Trash2 size={12} /> Hapus
-              </button>
+              <div className="flex shrink-0 gap-3">
+                <button
+                  onClick={() => setEditingTask(task)}
+                  className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:underline"
+                >
+                  <Pencil size={12} /> Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteTask(task.id, task.title)}
+                  className="flex items-center gap-1 text-xs font-medium text-red-600 hover:underline"
+                >
+                  <Trash2 size={12} /> Hapus
+                </button>
+              </div>
             </Card>
           ))}
           {optimisticTasks.length === 0 && <p className="text-sm text-gray-500">Belum ada tugas.</p>}
@@ -314,13 +375,15 @@ function CategoryForm({
   );
 }
 
-function AddForm({
+function TaskForm({
+  task,
   categories,
   media,
   username,
   onSubmit,
   onClose,
 }: {
+  task?: TaskItem | null;
   categories: TaskCategory[];
   media: MediaItem[];
   username: string;
@@ -330,7 +393,7 @@ function AddForm({
   return (
     <Card className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-gray-900">Tambah Tugas Baru</p>
+        <p className="text-sm font-semibold text-gray-900">{task ? "Edit Tugas" : "Tambah Tugas Baru"}</p>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-900">
           <X size={16} />
         </button>
@@ -338,20 +401,20 @@ function AddForm({
 
       <form action={onSubmit} className="space-y-4">
         <Field label="Judul Tugas">
-          <input name="title" required className={inputClass} />
+          <input name="title" defaultValue={task?.title} required className={inputClass} />
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Mata Kuliah">
-            <input name="course" className={inputClass} />
+            <input name="course" defaultValue={task?.course} className={inputClass} />
           </Field>
           <Field label="Tanggal">
-            <input name="date" type="date" className={inputClass} />
+            <input name="date" type="date" defaultValue={task?.date} className={inputClass} />
           </Field>
         </div>
 
         <Field label="Kategori">
-          <select name="categoryId" defaultValue="" className={inputClass}>
+          <select name="categoryId" defaultValue={task?.categoryId || ""} className={inputClass}>
             <option value="">Tanpa kategori</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
@@ -361,7 +424,15 @@ function AddForm({
           </select>
         </Field>
 
-        <FilePicker urlName="fileUrl" sizeName="fileSize" label="Berkas Tugas" username={username} media={media} />
+        <FilePicker
+          urlName="fileUrl"
+          sizeName="fileSize"
+          label="Berkas Tugas"
+          defaultUrl={task?.fileUrl}
+          defaultSize={task ? parseSizeToBytes(task.size) : 0}
+          username={username}
+          media={media}
+        />
 
         <div className="flex gap-3">
           <button type="submit" className={buttonPrimaryClass}>

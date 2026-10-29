@@ -199,7 +199,7 @@ export default function HomeContent({
                     alt={logo.alt}
                     width={160}
                     height={48}
-                    className="h-10 w-auto object-contain sm:h-12"
+                    className="h-9 w-auto object-contain md:h-[45px]"
                   />
                 ))}
               </div>

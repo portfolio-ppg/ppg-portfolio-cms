@@ -6,8 +6,9 @@ import Link from "next/link";
 import Marquee from "@/components/Marquee";
 import ProfileAvatar from "@/components/ProfileAvatar";
 import NatureCard from "@/components/NatureCard";
+import RichText from "@/components/RichText";
 import { getAvatarShadow, getAvatarAnimation } from "@/lib/avatar-effects";
-import type { Profile, SchoolProfile, HometownItem, Appearance } from "@/lib/types";
+import type { Profile, SchoolProfile, HometownItem, Appearance, ContentSection } from "@/lib/types";
 
 // Small set of acronyms that should stay fully uppercase instead of
 // title-casing (e.g. "ppg" -> "PPG", not "Ppg") when turning a username/URL
@@ -20,6 +21,45 @@ function humanizeSlug(slug: string): string {
     .filter(Boolean)
     .map((word) => SLUG_ACRONYMS[word.toLowerCase()] ?? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
+}
+
+/** Two-column "eyebrow + heading | body" section shared by the text sections. */
+function TextSection({
+  className,
+  label,
+  title,
+  body,
+  tinted = false,
+}: {
+  className: string;
+  label: string;
+  title: string;
+  body: string;
+  tinted?: boolean;
+}) {
+  return (
+    <section
+      className={`${className} text-section py-12 text-center md:py-12 md:text-left lg:py-24 ${tinted ? "bg-cream-deep/60" : ""}`}
+    >
+      <div className="mx-auto max-w-6xl px-6 md:px-10 lg:px-10">
+        <div className="grid gap-6 md:grid-cols-[0.4fr_0.6fr]">
+          <div>
+            {label && (
+              <p className="text-[10px]! font-semibold uppercase tracking-[0.18em] text-clay-deep sm:text-[12px]">
+                {label}
+              </p>
+            )}
+            {title && <h2 className="mt-3 font-display text-[24px] text-ink md:text-[36px]">{title}</h2>}
+          </div>
+          <RichText value={body} className="text-[15px] leading-relaxed text-ink-soft" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function hasBody(section: ContentSection) {
+  return section.body.trim() !== "";
 }
 
 export default function HomeContent({
@@ -40,6 +80,27 @@ export default function HomeContent({
     { label: "Kampus", value: profile.campus },
     { label: "Asal Daerah", value: profile.originRegion },
   ];
+
+  const logos = [
+    { src: profile.programLogoUrl, alt: `Logo ${profile.program}` },
+    { src: profile.campusLogoUrl, alt: `Logo ${profile.campus}` },
+  ].filter((l) => l.src);
+
+  // Alternate tinted/plain backgrounds across whichever text sections are
+  // actually shown, so hidden (empty) sections don't break the rhythm.
+  const textSections = [
+    { key: "inspirasi", className: "inspirasi-section", ...profile.inspirasi, show: hasBody(profile.inspirasi) },
+    {
+      key: "visi-misi",
+      className: "visi-misi-section",
+      label: profile.visiMisiLabel,
+      title: profile.visiMisiTitle,
+      body: profile.visiMisi,
+      show: true,
+    },
+    { key: "visi-pribadi", className: "visi-pribadi-section", ...profile.visiPribadi, show: hasBody(profile.visiPribadi) },
+    { key: "komitmen", className: "komitmen-section", ...profile.komitmen, show: hasBody(profile.komitmen) },
+  ].filter((s) => s.show);
 
   const [firstName, ...restName] = profile.name.split(" ");
   const restNameStr = restName.join(" ");
@@ -128,6 +189,21 @@ export default function HomeContent({
                 </div>
               ))}
             </dl>
+
+            {logos.length > 0 && (
+              <div className="mt-6 flex items-center justify-center gap-5 md:justify-start">
+                {logos.map((logo) => (
+                  <Image
+                    key={logo.src}
+                    src={logo.src}
+                    alt={logo.alt}
+                    width={160}
+                    height={48}
+                    className="h-10 w-auto object-contain sm:h-12"
+                  />
+                ))}
+              </div>
+            )}
           </motion.div>
 
           <motion.div
@@ -161,30 +237,14 @@ export default function HomeContent({
             </p>
             <h2 className="mt-3 font-display text-[24px] text-ink md:text-[36px]">{profile.name}</h2>
           </div>
-          <p className="text-[15px] leading-relaxed text-ink-soft">
-            {profile.description}
-          </p>
+          <RichText value={profile.description} className="text-[15px] leading-relaxed text-ink-soft" />
         </div>
       </section>
 
-      {/* ===== VISI MISI ===== */}
-      <section className="visi-misi-section bg-cream-deep/60 py-12 text-center md:py-12 md:text-left lg:py-24">
-        <div className="mx-auto max-w-6xl px-6 md:px-10 lg:px-10">
-          <div className="grid gap-6 md:grid-cols-[0.4fr_0.6fr]">
-            <div>
-              <p className="text-[10px]! font-semibold uppercase tracking-[0.18em] text-clay-deep sm:text-[12px]">
-                Visi Misi
-              </p>
-              <h2 className="mt-3 font-display text-[24px] text-ink md:text-[36px]">
-                Sebagai Calon Guru Profesional
-              </h2>
-            </div>
-            <p className="whitespace-pre-line text-[15px] leading-relaxed text-ink-soft">
-              {profile.visiMisi}
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* ===== INSPIRASI / VISI / VISI PRIBADI / KOMITMEN ===== */}
+      {textSections.map(({ key, className, label, title, body }, i) => (
+        <TextSection key={key} className={className} label={label} title={title} body={body} tinted={i % 2 === 0} />
+      ))}
 
       {/* ===== PROFIL SEKOLAH ===== */}
       {(schoolProfile.name || schoolProfile.description || schoolProfile.logoUrl) && (

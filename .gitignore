@@ -22,3 +22,6 @@
 npm-debug.log*
 .vercel
 .env*
+
+# content-script backups (scripts/update-elva-content.mjs)
+/backups/

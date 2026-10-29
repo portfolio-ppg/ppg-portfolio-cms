@@ -41,6 +41,15 @@ export const FONT_PAIRS: FontPairDef[] = [
     previewBody: "Source Sans 3",
   },
   {
+    id: "playfair-jakarta",
+    name: "Elegan Hangat",
+    description: "Serif tegas bergaya majalah dengan sans modern yang ramah.",
+    displayVar: "--font-playfair",
+    bodyVar: "--font-jakarta",
+    previewDisplay: "Playfair Display",
+    previewBody: "Plus Jakarta Sans",
+  },
+  {
     id: "baloo-nunito",
     name: "Ceria",
     description: "Bulat & ramah — cocok untuk kesan hangat dan playful.",

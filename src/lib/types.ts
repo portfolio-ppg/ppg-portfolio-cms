@@ -10,6 +10,13 @@ export interface User {
 
 export type Role = "Mahasiswa" | "Mahasiswi";
 
+/** A CMS-editable text section on the public page. `body` is sanitized HTML (or legacy plain text). */
+export interface ContentSection {
+  label: string; // small uppercase eyebrow above the heading
+  title: string;
+  body: string;
+}
+
 export interface Profile {
   name: string;
   role: Role;
@@ -18,9 +25,19 @@ export interface Profile {
   originRegion: string;
   description: string;
   tagline: string;
+  /** Eyebrow + heading for the visiMisi section (body = visiMisi). */
+  visiMisiLabel: string;
+  visiMisiTitle: string;
   visiMisi: string;
+  /** Extra sections — each only renders on the public page once its body is non-empty. */
+  inspirasi: ContentSection;
+  visiPribadi: ContentSection;
+  komitmen: ContentSection;
   email: string;
   avatarUrl: string;
+  /** Small logos shown side by side under the Program/Kampus facts in the hero. */
+  programLogoUrl: string;
+  campusLogoUrl: string;
 }
 
 export interface SchoolProfile {
@@ -62,7 +79,8 @@ export type TemplateId =
   | "sunset"
   | "forest"
   | "lavender"
-  | "charcoal";
+  | "charcoal"
+  | "mocha";
 
 /** Structural layout of the public portfolio page — independent of the color Template. */
 export type LayoutId =
@@ -84,7 +102,8 @@ export type FontPairId =
   | "grotesk-plex"
   | "lora-mulish"
   | "poppins-work"
-  | "cormorant-karla";
+  | "cormorant-karla"
+  | "playfair-jakarta";
 
 /** Box-shadow style applied to the profile photo on the public page. */
 export type AvatarShadowId = "soft" | "none" | "glow" | "sharp" | "ring";

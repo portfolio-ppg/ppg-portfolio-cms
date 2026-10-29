@@ -156,6 +156,23 @@ export const TEMPLATES: TemplateDef[] = [
       surfaceColor: "#ffffff",
     },
   },
+  {
+    id: "mocha",
+    name: "Mocha",
+    description: "Krem hangat & cokelat kopi — lembut, elegan, dan nyaman dibaca.",
+    preview: "linear-gradient(135deg, #5c4033, #c9b3a3)",
+    defaults: {
+      backgroundColor: "#f6f2ee",
+      backgroundColorDeep: "#ede6df",
+      textColor: "#3b2a22",
+      textColorSoft: "#6e5d54",
+      solidColor: "#8b6b5c",
+      gradientFrom: "#5c4033",
+      gradientTo: "#8b6b5c",
+      borderColor: "#e4d9cf",
+      surfaceColor: "#fbf9f7",
+    },
+  },
 ];
 
 export const TEMPLATE_DEFAULTS: Record<TemplateId, TemplateDef["defaults"]> =

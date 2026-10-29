@@ -108,7 +108,12 @@ function rewritePortfolioUsername(portfolio: Portfolio, oldUsername: string, new
   return {
     ...portfolio,
     username: newUsername,
-    profile: { ...portfolio.profile, avatarUrl: swap(portfolio.profile.avatarUrl) },
+    profile: {
+      ...portfolio.profile,
+      avatarUrl: swap(portfolio.profile.avatarUrl),
+      programLogoUrl: swap(portfolio.profile.programLogoUrl ?? ""),
+      campusLogoUrl: swap(portfolio.profile.campusLogoUrl ?? ""),
+    },
     schoolProfile: portfolio.schoolProfile
       ? { ...portfolio.schoolProfile, logoUrl: swap(portfolio.schoolProfile.logoUrl) }
       : defaultSchoolProfile(),
@@ -162,9 +167,18 @@ function defaultProfile(displayName: string): Profile {
     originRegion: "Asal Daerah",
     description: "Tuliskan deskripsi profil Anda di sini.",
     tagline: "Tuliskan tagline singkat di sini.",
+    visiMisiLabel: "Visi Misi",
+    visiMisiTitle: "Sebagai Calon Guru Profesional",
     visiMisi: "Tuliskan visi dan misi Anda di sini.",
+    // Empty bodies on purpose — like defaultSchoolProfile, these sections
+    // stay hidden until filled in, so existing portfolios look unchanged.
+    inspirasi: { label: "Inspirasi & Tujuan", title: "Mengapa Saya Menjadi Guru", body: "" },
+    visiPribadi: { label: "Visi Pribadi", title: "Visi Pribadi Saya sebagai Calon Guru", body: "" },
+    komitmen: { label: "Komitmen", title: "Komitmen Saya dalam Mewujudkan Visi Pendidikan", body: "" },
     email: "",
     avatarUrl: "",
+    programLogoUrl: "",
+    campusLogoUrl: "",
   };
 }
 
@@ -247,7 +261,13 @@ function normalizePortfolio(stored: Portfolio, username: string, displayName: st
   return {
     ...defaults,
     ...stored,
-    profile: { ...defaults.profile, ...stored.profile },
+    profile: {
+      ...defaults.profile,
+      ...stored.profile,
+      inspirasi: { ...defaults.profile.inspirasi, ...stored.profile?.inspirasi },
+      visiPribadi: { ...defaults.profile.visiPribadi, ...stored.profile?.visiPribadi },
+      komitmen: { ...defaults.profile.komitmen, ...stored.profile?.komitmen },
+    },
     appearance: { ...defaults.appearance, ...stored.appearance },
     schoolProfile: { ...defaults.schoolProfile, ...stored.schoolProfile },
   };

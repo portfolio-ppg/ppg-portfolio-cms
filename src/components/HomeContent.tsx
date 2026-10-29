@@ -191,7 +191,7 @@ export default function HomeContent({
             </dl>
 
             {logos.length > 0 && (
-              <div className="mt-6 flex items-center justify-center gap-5 md:justify-start">
+              <div className="mt-6 flex items-center justify-center gap-5 border-t border-stone/25 pt-6 md:justify-start">
                 {logos.map((logo) => (
                   <Image
                     key={logo.src}
